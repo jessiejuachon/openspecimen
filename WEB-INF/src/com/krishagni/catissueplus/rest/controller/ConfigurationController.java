@@ -57,8 +57,8 @@ public class ConfigurationController {
 			.property(propertyName)
 			.propertyType(propertyType);
 	    ConfigSettingDetail  setting;
-	    if(criteria.propertyType().equalsIgnoreCase("user")){
-          return  response(cfgSvc.getConfigSettings(request(criteria)));
+	    if(StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
+	      return  response(cfgSvc.getConfigSettings(request(criteria)));
 	    } else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
 	      setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
 	      return Collections.singletonList(setting);
