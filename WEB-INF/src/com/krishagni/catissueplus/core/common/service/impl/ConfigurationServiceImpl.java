@@ -38,7 +38,9 @@ import com.krishagni.catissueplus.core.common.domain.ConfigErrorCode;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
+import com.krishagni.catissueplus.core.common.domain.UserConfigSetting;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
+import com.krishagni.catissueplus.core.common.events.ConfigCriteria;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
@@ -70,51 +72,71 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	
 	public void setAppProps(Properties appProps) {
 		this.appProps = appProps;
-	}
+	}		
 
 	@Override
 	@PlusTransactional
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req) {
-		String module = req.getPayload();
-
-		List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
-		if (StringUtils.isBlank(module)) {
-			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
-				settings.addAll(moduleSettings.values());
+		try {	 
+		    String moduleName = req.getPayload();
+   		    List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
+		    if (StringUtils.isBlank( moduleName)) {
+		    for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
+			  settings.addAll(moduleSettings.values());
 			}
-		} else {
-			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
-			if (moduleSettings != null) {
-				settings.addAll(moduleSettings.values());
-			}
-		}
+		    } else {
+		      Map<String, ConfigSetting> moduleSettings = configSettings.get(moduleName);
+			  if (moduleSettings != null) {
+			    settings.addAll(moduleSettings.values());
+			  }
+		    }
+	        
+		    return ResponseEvent.response(ConfigSettingDetail.from(settings));
+	    } catch (OpenSpecimenException ose) {
+	        return ResponseEvent.error(ose);
+	    } catch (Exception e) {
+	        return ResponseEvent.serverError(e); 	
+	    }
+    }
 		
-		return ResponseEvent.response(ConfigSettingDetail.from(settings));
-	}
-
-	@Override
+    @Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req) {
-		Pair<String, String> payload = req.getPayload();
+    	Pair<String, String> payload = req.getPayload();
 		try {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
 			if (moduleSettings == null) {
-				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
+			  return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 			}
-
+  
 			ConfigSetting setting = moduleSettings.get(payload.second());
 			if (setting == null) {
-				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+		      return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
 			}
 
-			return ResponseEvent.response(ConfigSettingDetail.from(setting));
+		    return ResponseEvent.response(ConfigSettingDetail.from(setting));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		}
 	}
-
+	
+	@Override
+	@PlusTransactional
+	public ResponseEvent<List<ConfigSettingDetail>> getConfigSettings(RequestEvent<ConfigCriteria> req) {
+		try {
+			Map<String, Map<String, Set<ConfigProperty>>> settingsMap = new ConcurrentHashMap<>();
+			Map<String, Set<ConfigProperty>> moduleSettings = null ;
+			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings();
+			return ResponseEvent.response(ConfigSettingDetail.from(settings));
+		} catch (OpenSpecimenException ose) {
+		  return ResponseEvent.error(ose);
+		} catch (Exception e) {
+		  return ResponseEvent.serverError(e);
+		}
+	}
+	
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {

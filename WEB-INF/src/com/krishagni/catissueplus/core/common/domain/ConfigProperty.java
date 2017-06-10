@@ -14,6 +14,11 @@ public class ConfigProperty extends BaseEntity {
 		FILE
 	};
 	
+	public enum PropertyType {
+		System,
+		User
+	};
+	
 	private Module module;
 	
 	private String name;
@@ -23,6 +28,8 @@ public class ConfigProperty extends BaseEntity {
 	private String descCode;
 	
 	private Set<String> allowedValues;
+	 
+	private PropertyType propertyType;
 	
 	private DataType dataType;
 	
@@ -86,5 +93,13 @@ public class ConfigProperty extends BaseEntity {
 
 	public boolean isFile() {
 		return getDataType() == DataType.FILE;
+	}
+
+	public PropertyType getPropertyType() {
+		return propertyType;
+	}
+
+	public void setPropertyType(PropertyType propertyType) {
+		this.propertyType = propertyType;
 	}
 }

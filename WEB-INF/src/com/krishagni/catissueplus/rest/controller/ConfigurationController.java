@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.common.Pair;
+import com.krishagni.catissueplus.core.common.events.ConfigCriteria;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
@@ -37,6 +38,7 @@ public class ConfigurationController {
 	@Autowired
 	private ConfigurationService cfgSvc;
 	
+	@SuppressWarnings("unchecked")
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody	
@@ -45,13 +47,23 @@ public class ConfigurationController {
 		String moduleName,
 
 		@RequestParam(value = "property", required = false)
-		String propertyName) {
-
-		if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
-			ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
-			return Collections.singletonList(setting);
+		String propertyName, 
+	    
+	    @RequestParam(value = "propertyType", required = false)
+	    String propertyType) {
+		
+		ConfigCriteria criteria = new ConfigCriteria()
+			.module(moduleName)
+			.property(propertyName)
+			.propertyType(propertyType);
+	    ConfigSettingDetail  setting;
+	    if(criteria.propertyType().equalsIgnoreCase("user")){
+          return  response(cfgSvc.getConfigSettings(request(criteria)));
+	    } else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
+	      setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
+	      return Collections.singletonList(setting);
 		} else {
-			return response(cfgSvc.getSettings(request(moduleName)));
+		  return response(cfgSvc.getSettings(request(moduleName)));
 		}
 	}
 

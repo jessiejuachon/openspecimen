@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE hibernate-mapping PUBLIC
-    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "-//Hibernate/H-ibernate Mapping DTD 3.0//EN"
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping auto-import="false">
@@ -18,7 +18,7 @@
       name="module"
       class="com.krishagni.catissueplus.core.common.domain.Module"
       column="MODULE_ID"/>
-
+      
     <property name="name" column="NAME" unique="true"/>
 
     <property name="displayNameCode" column="DISPLAY_NAME_CODE"/>
@@ -32,7 +32,14 @@
       </type>
     </property>
 
-    <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan">
+    <property name="propertyType" column="PROPERTY_TYPE">
+      <type name="org.hibernate.type.EnumType">
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.ConfigProperty$PropertyType</param>
+        <param name="type">12</param>
+      </type>
+    </property>
+    
+   <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan">
       <key column="PROPERTY_ID"/>
       <element column="VALUE" type="string"/>
     </set>

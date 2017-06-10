@@ -6,12 +6,12 @@ import java.util.Map;
 
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.common.Pair;
+import com.krishagni.catissueplus.core.common.events.ConfigCriteria;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 
 public interface ConfigurationService {
-	
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req);
 
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req);
@@ -21,6 +21,9 @@ public interface ConfigurationService {
 	public ResponseEvent<File> getSettingFile(RequestEvent<Pair<String, String>> req);
 
 	public ResponseEvent<String> uploadSettingFile(RequestEvent<FileDetail> req);
+	
+	ResponseEvent<List<ConfigSettingDetail>> getConfigSettings(RequestEvent<ConfigCriteria> req);
+
 		
 	//
 	// Internal to app APIs
@@ -66,4 +69,5 @@ public interface ConfigurationService {
 	boolean isOracle();
 
 	Map<String, String> getDeploymentSiteAssets();
+
 }
