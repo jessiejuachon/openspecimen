@@ -38,7 +38,7 @@ public class ConfigurationController {
 	@Autowired
 	private ConfigurationService cfgSvc;
 	
-	@SuppressWarnings("unchecked")
+
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody	
