@@ -126,7 +126,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@PlusTransactional
 	public ResponseEvent<List<ConfigSettingDetail>> getConfigSettings(RequestEvent<ConfigCriteria> req) {
 		try {
-			Map<String, Map<String, Set<ConfigProperty>>> settingsMap = new ConcurrentHashMap<>();
 			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings();
 			return ResponseEvent.response(ConfigSettingDetail.from(settings));
 		} catch (OpenSpecimenException ose) {
