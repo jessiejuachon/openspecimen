@@ -16,8 +16,6 @@ import com.krishagni.catissueplus.core.common.domain.Module;
 import com.krishagni.catissueplus.core.common.domain.UserConfigSetting;
 
 public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
-	private UserSummary user;
-	
 	private String module;
 	
 	private String name;
@@ -139,24 +137,6 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		return result;
 	}
 	
-	public static ConfigSettingDetail copyFrom(ConfigSetting setting,ConfigSettingDetail result) {
-	    ConfigProperty property = setting.getProperty();
-		Module module = property.getModule();
-		
-		result.setModule(module.getName());
-		result.setName(property.getName());
-		result.setType(property.getDataType());
-		result.setAllowedValues(new HashSet<String>(property.getAllowedValues()));
-		result.setDescCode(property.getDescCode());
-		result.setDisplayNameCode(property.getDisplayNameCode());
-		result.setSecured(property.isSecured());
-		result.setValue(property.isSecured() ? "********" : setting.getValue());
-		result.setActivationDate(setting.getActivationDate());
-		result.setPropertyType(property.getPropertyType());
-		return result;
-	}
-	
-	
 	public static List<ConfigSettingDetail> from(Collection<ConfigSetting> settings) {
 		List<ConfigSettingDetail> result = new ArrayList<ConfigSettingDetail>();
 		
@@ -172,17 +152,16 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	   List<ConfigSettingDetail> result=new ArrayList<ConfigSettingDetail>();
        
 	   for(UserConfigSetting setting : settings){
-	     result.add(from(setting));
+	     result.add(getDetail(setting));
 	   }
       
        Collections.sort(result);
 	   return result;	
 	}
 	
-	public static ConfigSettingDetail from(UserConfigSetting setting) {
+	public static ConfigSettingDetail getDetail(UserConfigSetting setting) {
 		ConfigSettingDetail result = new ConfigSettingDetail();
-		result = ConfigSettingDetail.copyFrom(setting,result);
-		result.setUser(UserSummary.from(setting.getConfigUser()));
+		result = ConfigSettingDetail.from(setting);
         return result;
 	}
     
@@ -194,11 +173,4 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		this.propertyType = propertyType;
 	}
 
-	public UserSummary getUser() {
-		return user;
-	}
-
-	public void setUser(UserSummary user) {
-		this.user = user;
-	}
 }

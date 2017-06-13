@@ -6,7 +6,7 @@ public class ConfigCriteria {
 	private String property;
 	
 	private String propertyType;
-
+	
 	public ConfigCriteria module(String module){
 		this.module = module;
 		return this;
@@ -33,5 +33,4 @@ public class ConfigCriteria {
 	public String propertyType() {
 		return propertyType;
 	}
-
-}
+ }

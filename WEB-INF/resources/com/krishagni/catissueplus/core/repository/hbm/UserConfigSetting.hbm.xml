@@ -29,6 +29,7 @@
       from
         com.krishagni.catissueplus.core.common.domain.UserConfigSetting ucs
       where
+        ucs.configUser.id = :userId and
         ucs.activityStatus = 'Active'
     </query>
 

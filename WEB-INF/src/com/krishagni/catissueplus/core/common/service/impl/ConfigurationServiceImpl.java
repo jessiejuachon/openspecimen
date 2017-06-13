@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import com.krishagni.catissueplus.core.auth.services.impl.UserAuthenticationServiceImpl;
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.Pair;
@@ -40,10 +41,10 @@ import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
 import com.krishagni.catissueplus.core.common.domain.UserConfigSetting;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
-import com.krishagni.catissueplus.core.common.events.ConfigCriteria;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
+import com.krishagni.catissueplus.core.common.events.UserSummary;
 import com.krishagni.catissueplus.core.common.service.ConfigChangeListener;
 import com.krishagni.catissueplus.core.common.service.ConfigurationService;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
@@ -58,12 +59,18 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	private DaoFactory daoFactory;
 	
+	private UserAuthenticationServiceImpl authService;
+	
 	private MessageSource messageSource;
 	
 	private Properties appProps = new Properties();
 		
 	public void setDaoFactory(DaoFactory daoFactory) {
 		this.daoFactory = daoFactory;
+	}
+	
+	public void setAuthService(UserAuthenticationServiceImpl authService) {
+		this.authService = authService;
 	}
 	
 	public void setMessageSource(MessageSource messageSource) {
@@ -81,9 +88,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		    String moduleName = req.getPayload();
    		    List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
 		    if (StringUtils.isBlank( moduleName)) {
-		    for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
-			  settings.addAll(moduleSettings.values());
-			}
+		      for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
+			    settings.addAll(moduleSettings.values());
+			  }
 		    } else {
 		      Map<String, ConfigSetting> moduleSettings = configSettings.get(moduleName);
 			  if (moduleSettings != null) {
@@ -124,9 +131,14 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	
 	@Override
 	@PlusTransactional
-	public ResponseEvent<List<ConfigSettingDetail>> getConfigSettings(RequestEvent<ConfigCriteria> req) {
+	public ResponseEvent<List<ConfigSettingDetail>> getConfigSettings() {
 		try {
-			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings();
+			ResponseEvent<UserSummary> user = authService.getCurrentLoggedInUser();
+			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings(user.getPayload().getId());
+			if(settings.isEmpty()){
+		      return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);	
+			}
+		    
 			return ResponseEvent.response(ConfigSettingDetail.from(settings));
 		} catch (OpenSpecimenException ose) {
 		  return ResponseEvent.error(ose);

@@ -16,14 +16,14 @@ public class UserConfigSettingDaoImpl extends AbstractDao<ConfigSetting> impleme
 		return UserConfigSetting.class;
 	}
 	
-   
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
 	@Override
-	public List<UserConfigSetting> getAllSettings() {
-      return getCurrentSession().getNamedQuery(GET_ALL).list();
+	public List<UserConfigSetting> getAllSettings(Long userId) {
+      return getCurrentSession().getNamedQuery(GET_ALL).setParameter("userId",userId).list();
 	}
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
+	@Override
 	public List<UserConfigSetting> getAllSettingsByModule(String moduleName) {
       return getCurrentSession().getNamedQuery(GET_ALL_BY_MODULE)
     		  .setString("name", moduleName)

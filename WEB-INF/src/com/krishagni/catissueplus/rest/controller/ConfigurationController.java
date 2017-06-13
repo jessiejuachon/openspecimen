@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.common.Pair;
-import com.krishagni.catissueplus.core.common.events.ConfigCriteria;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
@@ -51,16 +50,11 @@ public class ConfigurationController {
 	    
 	    @RequestParam(value = "propertyType", required = false)
 	    String propertyType) {
-		
-		ConfigCriteria criteria = new ConfigCriteria()
-			.module(moduleName)
-			.property(propertyName)
-			.propertyType(propertyType);
-	    ConfigSettingDetail  setting;
+	    
 	    if(StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
-	      return  response(cfgSvc.getConfigSettings(request(criteria)));
+	      return  response(cfgSvc.getConfigSettings());
 	    } else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
-	      setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
+	      ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
 	      return Collections.singletonList(setting);
 		} else {
 		  return response(cfgSvc.getSettings(request(moduleName)));
