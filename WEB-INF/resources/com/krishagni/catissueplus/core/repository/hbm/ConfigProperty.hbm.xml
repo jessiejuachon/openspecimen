@@ -5,7 +5,7 @@
 
 <hibernate-mapping auto-import="false">
   <class 
-	name="com.krishagni.catissueplus.core.common.domain.ConfigProperty" 
+    name="com.krishagni.catissueplus.core.common.domain.ConfigProperty" 
 	table="OS_CFG_PROPS">
 	
 	<id name="id" column="IDENTIFIER">
