@@ -5,8 +5,9 @@
 
 <hibernate-mapping auto-import="false">
   <class 
-	name="com.krishagni.catissueplus.core.common.domain.ConfigProperty" 
-	table="OS_CFG_PROPS">
+  name="com.krishagni.catissueplus.core.common.domain.ConfigProperty" 
+  table="OS_CFG_PROPS">
+	
 	<id name="id" column="IDENTIFIER">
       <generator class="native">
         <param name="sequence">OS_CFG_PROPS_SEQ</param>

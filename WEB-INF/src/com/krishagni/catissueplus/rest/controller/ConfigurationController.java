@@ -42,20 +42,20 @@ public class ConfigurationController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody	
 	public List<ConfigSettingDetail> getConfigSettings(
-			@RequestParam(value = "module", required = false)
-			String moduleName,
+		@RequestParam(value = "module", required = false)
+		String moduleName,
 
-			@RequestParam(value = "property", required = false)
-			String propertyName, 
+		@RequestParam(value = "property", required = false)
+		String propertyName, 
 	   
-			@RequestParam(value = "propertyType", required = false)
-			String propertyType) {
+		@RequestParam(value = "propertyType", required = false)
+		String propertyType) {
 	    
 		if (StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
 			return  response(cfgSvc.getUserConfigSettings());
 	    } else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
 	    	ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
-	    			return Collections.singletonList(setting);
+	    	return Collections.singletonList(setting);
 		} else {
 			return response(cfgSvc.getSettings(request(moduleName)));
 		}
