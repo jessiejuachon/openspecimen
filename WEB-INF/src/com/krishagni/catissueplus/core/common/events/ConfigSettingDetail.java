@@ -107,8 +107,16 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	public void setSecured(boolean secured) {
 		this.secured = secured;
 	}
+	
+	public PropertyType getPropertyType() {
+		return propertyType;
+	}
 
-	@Override
+	public void setPropertyType(PropertyType propertyType) {
+		this.propertyType = propertyType;
+	}
+
+    @Override
 	public int compareTo(ConfigSettingDetail o) {
 		int cmp = module.compareTo(o.module);
 		if (cmp == 0) {
@@ -152,25 +160,11 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	   List<ConfigSettingDetail> result=new ArrayList<ConfigSettingDetail>();
        
 	   for(UserConfigSetting setting : settings){
-	     result.add(getDetail(setting));
+	     result.add(from(setting));
 	   }
       
        Collections.sort(result);
 	   return result;	
 	}
-	
-	public static ConfigSettingDetail getDetail(UserConfigSetting setting) {
-		ConfigSettingDetail result = new ConfigSettingDetail();
-		result = ConfigSettingDetail.from(setting);
-        return result;
-	}
-    
-	public PropertyType getPropertyType() {
-		return propertyType;
-	}
-
-	public void setPropertyType(PropertyType propertyType) {
-		this.propertyType = propertyType;
-	}
-
+	   
 }

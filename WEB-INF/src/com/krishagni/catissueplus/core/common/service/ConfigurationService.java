@@ -21,7 +21,7 @@ public interface ConfigurationService {
 
 	public ResponseEvent<String> uploadSettingFile(RequestEvent<FileDetail> req);
 	
-	ResponseEvent<List<ConfigSettingDetail>> getConfigSettings();
+	ResponseEvent<List<ConfigSettingDetail>> getUserConfigSettings();
 
 		
 	//
@@ -68,6 +68,4 @@ public interface ConfigurationService {
 	boolean isOracle();
 
 	Map<String, String> getDeploymentSiteAssets();
-
-
 }

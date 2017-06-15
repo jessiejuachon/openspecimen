@@ -41,6 +41,7 @@
         join ucs.property prop 
         join prop.module module
       where
+        ucs.configUser.id = :userId and
         ucs.activityStatus = 'Active' and 
         module.name = :name
     </query>

@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.krishagni.catissueplus.core.auth.services.impl.UserAuthenticationServiceImpl;
+import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.Pair;
@@ -44,7 +44,6 @@ import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
-import com.krishagni.catissueplus.core.common.events.UserSummary;
 import com.krishagni.catissueplus.core.common.service.ConfigChangeListener;
 import com.krishagni.catissueplus.core.common.service.ConfigurationService;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
@@ -59,8 +58,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	private DaoFactory daoFactory;
 	
-	private UserAuthenticationServiceImpl authService;
-	
 	private MessageSource messageSource;
 	
 	private Properties appProps = new Properties();
@@ -69,81 +66,72 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		this.daoFactory = daoFactory;
 	}
 	
-	public void setAuthService(UserAuthenticationServiceImpl authService) {
-		this.authService = authService;
-	}
-	
 	public void setMessageSource(MessageSource messageSource) {
 		this.messageSource = messageSource;
 	}
 	
 	public void setAppProps(Properties appProps) {
 		this.appProps = appProps;
-	}		
+	}
 
 	@Override
 	@PlusTransactional
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req) {
-		try {	 
-		    String moduleName = req.getPayload();
-   		    List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
-		    if (StringUtils.isBlank( moduleName)) {
-		      for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
-			    settings.addAll(moduleSettings.values());
-			  }
-		    } else {
-		      Map<String, ConfigSetting> moduleSettings = configSettings.get(moduleName);
-			  if (moduleSettings != null) {
-			    settings.addAll(moduleSettings.values());
-			  }
-		    }
-	        
-		    return ResponseEvent.response(ConfigSettingDetail.from(settings));
-	    } catch (OpenSpecimenException ose) {
-	        return ResponseEvent.error(ose);
-	    } catch (Exception e) {
-	        return ResponseEvent.serverError(e); 	
-	    }
-    }
+		String module = req.getPayload();
+
+		List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
+		if (StringUtils.isBlank(module)) {
+			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
+				settings.addAll(moduleSettings.values());
+			}
+		} else {
+			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
+			if (moduleSettings != null) {
+				settings.addAll(moduleSettings.values());
+			}
+		}
 		
-    @Override
+		return ResponseEvent.response(ConfigSettingDetail.from(settings));
+	}
+
+	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req) {
-    	Pair<String, String> payload = req.getPayload();
+		Pair<String, String> payload = req.getPayload();
 		try {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
 			if (moduleSettings == null) {
-			  return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-			}
-  
-			ConfigSetting setting = moduleSettings.get(payload.second());
-			if (setting == null) {
-		      return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 			}
 
-		    return ResponseEvent.response(ConfigSettingDetail.from(setting));
+			ConfigSetting setting = moduleSettings.get(payload.second());
+			if (setting == null) {
+				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+			}
+
+			return ResponseEvent.response(ConfigSettingDetail.from(setting));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		}
 	}
-	
+
 	@Override
 	@PlusTransactional
-	public ResponseEvent<List<ConfigSettingDetail>> getConfigSettings() {
+	public ResponseEvent<List<ConfigSettingDetail>> getUserConfigSettings() {
 		try {
-			ResponseEvent<UserSummary> user = authService.getCurrentLoggedInUser();
-			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings(user.getPayload().getId());
+			User user = AuthUtil.getCurrentUser();
+			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings(user.getId());
 			if(settings.isEmpty()){
-		      return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);	
+				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);	
 			}
 		    
 			return ResponseEvent.response(ConfigSettingDetail.from(settings));
 		} catch (OpenSpecimenException ose) {
-		  return ResponseEvent.error(ose);
+			return ResponseEvent.error(ose);
 		} catch (Exception e) {
-		  return ResponseEvent.serverError(e);
+			return ResponseEvent.serverError(e);
 		}
 	}
 	

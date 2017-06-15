@@ -71,6 +71,8 @@ public interface DaoFactory {
 	
 	ConfigSettingDao getConfigSettingDao();
 	
+	UserConfigSettingDao getUserConfigSettingDao();
+	
 	LabelPrintJobDao getLabelPrintJobDao();
 	
 	AuditDao getAuditDao();
@@ -93,5 +95,4 @@ public interface DaoFactory {
 
 	AutoFreezerProviderDao getAutoFreezerProviderDao();
 
-	UserConfigSettingDao getUserConfigSettingDao();
 } 

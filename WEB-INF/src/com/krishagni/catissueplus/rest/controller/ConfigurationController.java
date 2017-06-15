@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -42,22 +42,22 @@ public class ConfigurationController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody	
 	public List<ConfigSettingDetail> getConfigSettings(
-		@RequestParam(value = "module", required = false)
-		String moduleName,
+			@RequestParam(value = "module", required = false)
+		    String moduleName,
 
-		@RequestParam(value = "property", required = false)
-		String propertyName, 
+		    @RequestParam(value = "property", required = false)
+		    String propertyName, 
 	    
-	    @RequestParam(value = "propertyType", required = false)
-	    String propertyType) {
+	        @RequestParam(value = "propertyType", required = false)
+	        String propertyType) {
 	    
-	    if(StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
-	      return  response(cfgSvc.getConfigSettings());
+		if (StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
+			return  response(cfgSvc.getUserConfigSettings());
 	    } else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
-	      ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
-	      return Collections.singletonList(setting);
+	        ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
+	    	return Collections.singletonList(setting);
 		} else {
-		  return response(cfgSvc.getSettings(request(moduleName)));
+			return response(cfgSvc.getSettings(request(moduleName)));
 		}
 	}
 

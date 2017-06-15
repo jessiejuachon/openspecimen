@@ -4,11 +4,8 @@
     "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping auto-import="false">
-  <class
-    name="com.krishagni.catissueplus.core.common.domain.ConfigProperty"
-    table="OS_CFG_PROPS">
-	
-    <id name="id" column="IDENTIFIER">
+  <class name="com.krishagni.catissueplus.core.common.domain.ConfigProperty" table="OS_CFG_PROPS">
+	<id name="id" column="IDENTIFIER">
       <generator class="native">
         <param name="sequence">OS_CFG_PROPS_SEQ</param>
       </generator>
@@ -39,7 +36,7 @@
       </type>
     </property>
     
-   <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan">
+    <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan">
       <key column="PROPERTY_ID"/>
       <element column="VALUE" type="string"/>
     </set>

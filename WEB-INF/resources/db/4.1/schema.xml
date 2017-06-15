@@ -117,59 +117,59 @@
       tableName="OS_CP_ALLOWED_DPS"
       columnNames="CP_ID, DP_ID"/>
   </changeSet>
+  
    <changeSet author="mghodekar" id="Configuration setting for user">
-   <createTable tableName="OS_USER_CFG_SETTINGS">
-     <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
-       <constraints primaryKey="true"/>
-     </column>
-     <column name="USER_ID" type="${int.type}">
-       <constraints nullable="false"/>
-     </column>
-     <column name="ACTIVATED_BY" type="${int.type}">
-       <constraints nullable="false"/>
-     </column>
-     <column name=" PROPERTY_ID" type="${int.type}">
-       <constraints nullable="false"/>
-     </column>
-     <column name="VALUE" type="${text.type}(255)">
-     </column>
-     <column name="ACTIVATION_DATE" type="${timeStamp.type}">
-       <constraints nullable="false"/>
-     </column>
-     <column name="ACTIVITY_STATUS" type="${text.type}(16)">
-       <constraints nullable="false"/>
-     </column>
-   </createTable>
- </changeSet>
+     <createTable tableName="OS_USER_CFG_SETTINGS">
+       <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
+         <constraints primaryKey="true"/>
+       </column>
+       <column name="USER_ID" type="${int.type}">
+         <constraints nullable="false"/>
+       </column>
+       <column name="ACTIVATED_BY" type="${int.type}">
+         <constraints nullable="false"/>
+       </column>
+       <column name=" PROPERTY_ID" type="${int.type}">
+         <constraints nullable="false"/>
+       </column>
+       <column name="VALUE" type="${text.type}(255)">
+       </column>
+       <column name="ACTIVATION_DATE" type="${timeStamp.type}">
+         <constraints nullable="false"/>
+       </column>
+       <column name="ACTIVITY_STATUS" type="${text.type}(16)">
+         <constraints nullable="false"/>
+       </column>
+     </createTable>
+   </changeSet>
  
   <changeSet author="mghodekar" id="User config identifier sequence" dbms="oracle">
     <createSequence sequenceName="OS_USER_CFG_SETTINGS_SEQ" startValue="1" incrementBy="1" ordered="true"/>
   </changeSet>
  
   <changeSet author="mghodekar" id="FK on user id of user cfg setting">
-   <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_USER_ID"
-     baseTableName="OS_USER_CFG_SETTINGS" baseColumnNames="USER_ID" 
-     referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
- </changeSet>
+    <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_USER_ID"
+      baseTableName="OS_USER_CFG_SETTINGS" baseColumnNames="USER_ID" 
+      referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
  
- <changeSet author="mghodekar" id="FK on activated by of user config seetings">
-   <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_IDETIFIER"
+  <changeSet author="mghodekar" id="FK on activated by of user config seetings">
+   <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_ACTV_BY"
      baseTableName="OS_USER_CFG_SETTINGS" baseColumnNames="ACTIVATED_BY" 
-     referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
- </changeSet>
+     referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/></changeSet>
  
- <changeSet author="mghodekar" id="FK on property id of user config settings">
+  <changeSet author="mghodekar" id="FK on property id of user config settings">
     <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_PROPS_ID"
       baseTableName="OS_USER_CFG_SETTINGS" baseColumnNames="PROPERTY_ID"
       referencedTableName="OS_CFG_PROPS" referencedColumnNames="IDENTIFIER"/>
-   </changeSet>
+  </changeSet>
    
-   <changeSet author="mghodekar" id="Property Type Column for ConfigProperty">
-     <addColumn tableName="OS_CFG_PROPS">
-       <column name="PROPERTY_TYPE" type="${text.type}(16)" defaultValue="System">
-         <constraints nullable="false"/>
-       </column>
-     </addColumn>
-   </changeSet>
+  <changeSet author="mghodekar" id="Property Type Column for ConfigProperty">
+    <addColumn tableName="OS_CFG_PROPS">
+      <column name="PROPERTY_TYPE" type="${text.type}(16)" defaultValue="System">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
 
 </databaseChangeLog>
