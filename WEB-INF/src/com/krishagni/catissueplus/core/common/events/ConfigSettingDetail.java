@@ -116,7 +116,7 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		this.propertyType = propertyType;
 	}
 
-    @Override
+	@Override
 	public int compareTo(ConfigSettingDetail o) {
 		int cmp = module.compareTo(o.module);
 		if (cmp == 0) {
