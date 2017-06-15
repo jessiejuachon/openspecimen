@@ -43,7 +43,7 @@ public class ConfigProperty extends BaseEntity {
 		this.module = module;
 	}
 
-    public String getName() {
+	public String getName() {
 		return name;
 	}
 
@@ -91,7 +91,7 @@ public class ConfigProperty extends BaseEntity {
 		this.propertyType = propertyType;
 	}
 
-    public boolean isSecured() {
+	public boolean isSecured() {
 		return secured;
 	}
 

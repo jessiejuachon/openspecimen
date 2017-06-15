@@ -129,7 +129,6 @@
        <column name="ACTIVATED_BY" type="${int.type}">
          <constraints nullable="false"/>
        </column>
-       
        <column name=" PROPERTY_ID" type="${int.type}">
          <constraints nullable="false"/>
        </column>

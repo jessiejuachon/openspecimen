@@ -43,9 +43,9 @@ public class ConfigurationController {
 	@ResponseBody	
 	public List<ConfigSettingDetail> getConfigSettings(
 			@RequestParam(value = "module", required = false)
-		    String moduleName,
+			String moduleName,
 
-		    @RequestParam(value = "property", required = false)
+			@RequestParam(value = "property", required = false)
 			String propertyName, 
 	   
 			@RequestParam(value = "propertyType", required = false)
