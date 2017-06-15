@@ -19,7 +19,7 @@ public interface DaoFactory {
 	GroupDao getGroupDao();
 	
 	SubjectDao getSubjectDao();
-	
+		
 	CollectionProtocolDao getCollectionProtocolDao();
 	
 	SiteDao getSiteDao();

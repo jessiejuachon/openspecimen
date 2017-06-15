@@ -166,5 +166,5 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		Collections.sort(result);
 		return result;	
 	}
-	   
 }
+
