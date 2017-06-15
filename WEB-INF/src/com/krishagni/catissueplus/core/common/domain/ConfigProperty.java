@@ -27,12 +27,12 @@ public class ConfigProperty extends BaseEntity {
 	
 	private String descCode;
 	
+	private Set<String> allowedValues;
+	
 	private DataType dataType;
 	
 	private PropertyType propertyType;
 	
-	private Set<String> allowedValues;
-	 
 	private boolean secured;
 
 	public Module getModule() {
@@ -43,7 +43,7 @@ public class ConfigProperty extends BaseEntity {
 		this.module = module;
 	}
 
-	public String getName() {
+    public String getName() {
 		return name;
 	}
 
@@ -67,6 +67,14 @@ public class ConfigProperty extends BaseEntity {
 		this.descCode = descCode;
 	}
 	
+	public Set<String> getAllowedValues() {
+		return allowedValues;
+	}
+
+	public void setAllowedValues(Set<String> allowedValues) {
+		this.allowedValues = allowedValues;
+	}
+	
 	public DataType getDataType() {
 		return dataType;
 	}
@@ -83,15 +91,7 @@ public class ConfigProperty extends BaseEntity {
 		this.propertyType = propertyType;
 	}
 
-	public Set<String> getAllowedValues() {
-		return allowedValues;
-	}
-
-	public void setAllowedValues(Set<String> allowedValues) {
-		this.allowedValues = allowedValues;
-	}
-
-	public boolean isSecured() {
+    public boolean isSecured() {
 		return secured;
 	}
 

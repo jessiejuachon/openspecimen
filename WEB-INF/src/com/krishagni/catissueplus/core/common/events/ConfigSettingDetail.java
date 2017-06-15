@@ -157,7 +157,7 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	}
 	
 	public static List<ConfigSettingDetail> from(List<UserConfigSetting> settings) {
-	   List<ConfigSettingDetail> result=new ArrayList<ConfigSettingDetail>();
+	   List<ConfigSettingDetail> result = new ArrayList<ConfigSettingDetail>();
        
 	   for(UserConfigSetting setting : settings){
 	     result.add(from(setting));

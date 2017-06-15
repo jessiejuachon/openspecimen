@@ -129,6 +129,7 @@
        <column name="ACTIVATED_BY" type="${int.type}">
          <constraints nullable="false"/>
        </column>
+       
        <column name=" PROPERTY_ID" type="${int.type}">
          <constraints nullable="false"/>
        </column>
@@ -156,7 +157,8 @@
   <changeSet author="mghodekar" id="FK on activated by of user config seetings">
    <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_ACTV_BY"
      baseTableName="OS_USER_CFG_SETTINGS" baseColumnNames="ACTIVATED_BY" 
-     referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/></changeSet>
+     referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
  
   <changeSet author="mghodekar" id="FK on property id of user config settings">
     <addForeignKeyConstraint constraintName="FK_USER_CFG_SETTINGS_PROPS_ID"
