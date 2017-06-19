@@ -156,15 +156,20 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		return result;
 	}
 	
+	public static ConfigSettingDetail saveUser(UserConfigSetting settings)
+	{
+		return ConfigSettingDetail.from(settings);
+	}
+
+	
 	public static List<ConfigSettingDetail> from(List<UserConfigSetting> settings) {
 		List<ConfigSettingDetail> result = new ArrayList<ConfigSettingDetail>();
        
 		for(UserConfigSetting setting : settings){
 			result.add(from(setting));
-	    }
+		}
       
 		Collections.sort(result);
 		return result;	
 	}
 }
-
