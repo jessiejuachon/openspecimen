@@ -206,8 +206,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		    }
 			existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
 			if (existing == null) {
-			    newSetting = new UserConfigSetting();
-			    newSetting.setConfigUser(user);
+				newSetting = new UserConfigSetting();
+				newSetting.setConfigUser(user);
 			} else {
 				newSetting = new UserConfigSetting();  
 				newSetting.setConfigUser(user);
@@ -225,7 +225,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			 existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
 			 daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			 daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-		     return ResponseEvent.response(ConfigSettingDetail.saveUser(newSetting));
+			 return ResponseEvent.response(ConfigSettingDetail.saveUser(newSetting));
 	    } catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
