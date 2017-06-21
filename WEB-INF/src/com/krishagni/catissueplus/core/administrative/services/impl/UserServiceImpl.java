@@ -18,6 +18,8 @@ import org.opensaml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
@@ -54,12 +56,13 @@ import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
+import com.krishagni.catissueplus.core.events.Event;
 import com.krishagni.catissueplus.core.exporter.domain.ExportJob;
 import com.krishagni.catissueplus.core.exporter.services.ExportService;
 import com.krishagni.rbac.events.SubjectRoleDetail;
 import com.krishagni.rbac.service.RbacService;
 
-public class UserServiceImpl implements UserService, InitializingBean {
+public class UserServiceImpl implements UserService, InitializingBean, ApplicationEventPublisherAware {
 	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	private static final String DEFAULT_AUTH_DOMAIN = "openspecimen";
@@ -81,6 +84,8 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	private static final String ADMIN_MOD = "administrative";
 
 	private static final String ACTIVE_USER_LOGIN_DAYS_CFG = "active_users_login_days";
+
+	private ApplicationEventPublisher publisher;
 
 	private DaoFactory daoFactory;
 
@@ -111,7 +116,12 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	public void setExportSvc(ExportService exportSvc) {
 		this.exportSvc = exportSvc;
 	}
-
+	
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
+	}
+	
 	@Override
 	@PlusTransactional
 	public ResponseEvent<List<UserSummary>> getUsers(RequestEvent<UserListCriteria> req) {
@@ -229,7 +239,12 @@ public class UserServiceImpl implements UserService, InitializingBean {
 				ForgotPasswordToken token = generateForgotPwdToken(user);
 				sendUserCreatedEmail(user, token);
 			}
-
+			
+			//SignUp event is published 
+			Event signUpEvent = new Event(detail, "signUpEvent");
+			publisher.publishEvent(signUpEvent);
+			
+			
 			return ResponseEvent.response(UserDetail.from(user));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -838,4 +853,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 			}
 		};
 	}
+
+
+
 }
