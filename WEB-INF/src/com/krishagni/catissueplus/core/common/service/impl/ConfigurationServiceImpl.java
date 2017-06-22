@@ -198,15 +198,15 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			String module = detail.getModule();
 			String prop = detail.getName();
 			String value = detail.getValue();
-		    if (StringUtils.isBlank(module)) {
+			if (StringUtils.isBlank(module)) {
 		    	return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-		    }
+			}
 		    
-		    if (StringUtils.isBlank(prop)) {
-		    	return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-		    }
+			if (StringUtils.isBlank(prop)) {
+			    return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+			}
 		    
-		    existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
+			existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
 			if (existing == null) {
 				newSetting = new UserConfigSetting(); 
 				newSetting.setConfigUser(user);
