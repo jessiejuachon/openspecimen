@@ -51,7 +51,7 @@ public class ConfigurationController {
 		@RequestParam(value = "propertyType", required = false)
 		String propertyType) {
 	    
-		if (StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")){
+		if (StringUtils.isNotBlank(propertyType) && propertyType.equalsIgnoreCase("user")) {
 			return  response(cfgSvc.getUserConfigSettings());
 		} else if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
 			ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));

@@ -123,7 +123,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		try {
 			User user = AuthUtil.getCurrentUser();
 			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings(user.getId());
-			if(settings.isEmpty()){
+			if (settings.isEmpty()) {
 				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);	
 			}
 		    
@@ -140,51 +140,52 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
 		AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 		ConfigSettingDetail detail = req.getPayload();
-		if (detail.getPropertyType().equals(ConfigProperty.PropertyType.System)) {
-			String module = detail.getModule();
-		  	Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
-		  	if (moduleSettings == null || moduleSettings.isEmpty()) {
-		  		return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-		  	}
-		
-		  	String prop = detail.getName();
-		  	ConfigSetting existing = moduleSettings.get(prop);
-		  	if (existing == null) {
-		  		return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-		  	}
-		
-		  	String setting = detail.getValue();
-		  	if (!isValidSetting(existing.getProperty(), setting)) {
-		  		return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
-		  	}
-		
-		  	boolean successful = false;
-		  	try {
-		  		ConfigSetting newSetting = createSetting(existing, setting);
-		  		existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
-
-		  		daoFactory.getConfigSettingDao().saveOrUpdate(existing);
-		  		daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-		  		moduleSettings.put(prop, newSetting);
-			
-		  		notifyListeners(module, prop, setting);
-		  		successful = true;
-		  		return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
-		  	} catch (OpenSpecimenException ose) {
-		  		return ResponseEvent.error(ose);
-		  	} catch (Exception e) {
-		  		return ResponseEvent.serverError(e);
-		  	} finally {
-		  		if (successful) {
-		  			deleteOldSettingFile(existing);
-		  		} else {
-		  			existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-		  			moduleSettings.put(prop, existing);
-		  		}
-		  	}
-		} else {
+		if (detail.getPropertyType().equals(ConfigProperty.PropertyType.User)) {
 			return saveUserSetting(req);
+		} 
+		
+		String module = detail.getModule();
+		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
+		if (moduleSettings == null || moduleSettings.isEmpty()) {
+		  	return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 		}
+		
+		String prop = detail.getName();
+		ConfigSetting existing = moduleSettings.get(prop);
+		if (existing == null) {
+			return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+		}
+		
+		String setting = detail.getValue();
+		if (!isValidSetting(existing.getProperty(), setting)) {
+		  	return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
+		}
+		
+		boolean successful = false;
+		try {
+		  	ConfigSetting newSetting = createSetting(existing, setting);
+		  	existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
+
+		  	daoFactory.getConfigSettingDao().saveOrUpdate(existing);
+		  	daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
+		  	moduleSettings.put(prop, newSetting);
+			
+		  	notifyListeners(module, prop, setting);
+		  	successful = true;
+		  	return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
+		} catch (OpenSpecimenException ose) {
+		  	return ResponseEvent.error(ose);
+		} catch (Exception e) {
+		  	return ResponseEvent.serverError(e);
+		} finally {
+		  	if (successful) {
+		  		deleteOldSettingFile(existing);
+		  	} else {
+		  		existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
+		  		moduleSettings.put(prop, existing);
+		  	}
+		}
+		
 	}
 
 	public ResponseEvent<ConfigSettingDetail> saveUserSetting(RequestEvent<ConfigSettingDetail> req){ 	
@@ -197,36 +198,28 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			String module = detail.getModule();
 			String prop = detail.getName();
 			String value = detail.getValue();
-		    if (module == null) {
+		    if (StringUtils.isBlank(module)) {
 		    	return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 		    }
 		    
-		    if (prop == null) {
+		    if (StringUtils.isBlank(prop)) {
 		    	return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
 		    }
-			existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
+		    
+		    existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
 			if (existing == null) {
-				newSetting = new UserConfigSetting();
+				newSetting = new UserConfigSetting(); 
 				newSetting.setConfigUser(user);
 			} else {
-				newSetting = new UserConfigSetting();  
-				newSetting.setConfigUser(user);
-				newSetting.setProperty(existing.getProperty());
-				newSetting.setActivatedBy(AuthUtil.getCurrentUser());
-				newSetting.setActivationDate(Calendar.getInstance().getTime());
-				newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-				if (value != null && existing.getProperty().isSecured()) {
-					value = Utility.encrypt(value);
-			    }
-			    
-				newSetting.setValue(value);
+				newSetting = new UserConfigSetting(); 
+				newSetting = createUserSetting(existing, value, user);
 			}
 			 successful = true;
 			 existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
 			 daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			 daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-			 return ResponseEvent.response(ConfigSettingDetail.saveUser(newSetting));
-	    } catch (OpenSpecimenException ose) {
+			 return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
+		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
@@ -655,7 +648,23 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
 		newSetting.setActivationDate(Calendar.getInstance().getTime());
 		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
+
+		if (value != null && existing.getProperty().isSecured()) {
+			value = Utility.encrypt(value);
+		}
 		
+		newSetting.setValue(value);
+		return newSetting;
+	}
+	
+	private UserConfigSetting createUserSetting(UserConfigSetting existing, String value,User user) {
+		UserConfigSetting newSetting = new UserConfigSetting();
+		newSetting.setConfigUser(user);
+		newSetting.setProperty(existing.getProperty());
+		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
+		newSetting.setActivationDate(Calendar.getInstance().getTime());
+		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
+
 		if (value != null && existing.getProperty().isSecured()) {
 			value = Utility.encrypt(value);
 		}

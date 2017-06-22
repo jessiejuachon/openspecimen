@@ -42,9 +42,9 @@
         join prop.module module
       where
         ucs.configUser.id = :userId and
-        ucs.activityStatus = 'Active' and 
-        module.name = :name
-    </query>
+        module.name = :moduleName and 
+        ucs.activityStatus = 'Active' 
+     </query>
     
      <query name="getAllByModuleAndProp">
       select
@@ -55,8 +55,8 @@
         join prop.module module
       where
         ucs.configUser.id = :userId and
-        module.name = :moduleName and 
         prop.name = :propName and
+        module.name = :moduleName and 
         ucs.activityStatus = 'Active' 
     </query>
     
