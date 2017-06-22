@@ -15,6 +15,16 @@ public class LoginDetail {
 	private String apiUrl;
 	
 	private String requestMethod;
+	
+	private Long otp;
+
+	public Long getOtp() {
+		return otp;
+	}
+
+	public void setOtp(Long otp) {
+		this.otp = otp;
+	}
 
 	public String getLoginName() {
 		return loginName;
