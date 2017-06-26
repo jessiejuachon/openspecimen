@@ -11,6 +11,7 @@
       <div class="os-group-controls">
         <input type="text"     class="form-control" ng-model="loginData.loginName" placeholder="{{'user.login_name' | translate}}">
         <input type="password" class="form-control" ng-model="loginData.password"  placeholder="{{'user.password' | translate}}">
+        <input type="number" class="form-control" ng-model="loginData.otp"  placeholder="OTP if applicable">
         <div ng-if="domains.length > 1">
           <os-select ng-model="loginData.domainName" list="domains" name="domain"
             ng-click="$event.stopPropagation()" placeholder="{{'user.domain_name' | translate}}" required>
