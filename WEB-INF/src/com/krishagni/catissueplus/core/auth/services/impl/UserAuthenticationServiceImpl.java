@@ -37,6 +37,7 @@ import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.EmailUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.events.Event;
+import com.krishagni.catissueplus.core.events.eventcodes.OpenSpecimenEventCode;
 
 public class UserAuthenticationServiceImpl implements UserAuthenticationService, ApplicationEventPublisherAware {
 	private static final String ACCOUNT_LOCKED_NOTIF_TMPL = "account_locked_notification";
@@ -258,7 +259,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService,
 	}
 	
 	private void authenticateOtp(LoginDetail loginDetail) {
-		Event otpEvent = new Event(loginDetail, "otpEvent");
+		Event otpEvent = new Event(loginDetail,OpenSpecimenEventCode.OTP_CHECK.code());
 		publisher.publishEvent(otpEvent);
 		
 	}

@@ -57,6 +57,7 @@ import com.krishagni.catissueplus.core.common.util.MessageUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
 import com.krishagni.catissueplus.core.events.Event;
+import com.krishagni.catissueplus.core.events.eventcodes.OpenSpecimenEventCode;
 import com.krishagni.catissueplus.core.exporter.domain.ExportJob;
 import com.krishagni.catissueplus.core.exporter.services.ExportService;
 import com.krishagni.rbac.events.SubjectRoleDetail;
@@ -241,7 +242,7 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			}
 			
 			//SignUp event is published 
-			Event signUpEvent = new Event(detail, "signUpEvent");
+			Event signUpEvent = new Event(detail,OpenSpecimenEventCode.USER_SIGNUP.code());
 			publisher.publishEvent(signUpEvent);
 			
 			
