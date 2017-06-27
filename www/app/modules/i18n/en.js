@@ -2092,7 +2092,9 @@
         "account_inactive_days": "Inactive Account",
         "account_inactive_days_desc": "Number of days of inactivity before user account is locked.",
         "password_rule": "Password Complexity Description",
-        "password_rule_desc": "User friendly description of password complexity requirements."
+        "password_rule_desc": "User friendly description of password complexity requirements.",
+        "forgot_password": "Forgot Password",
+        "forgot_password_desc": "Allow or prevent users who have forgotten their passwords to set new password by using 'Forgot Password' feature."
       },
       
       "administrative": {
@@ -2104,7 +2106,9 @@
         "active_users_login_days": "Active User Login Days Criteria",
         "active_users_login_days_desc": "Number of days elapsed since last login before user is considered as inactive.",
         "system_lockdown": "System Lockdown",
-        "system_lockdown_desc": "Stop all users from using OpenSpecimen except super administrators."
+        "system_lockdown_desc": "Stop all users from using OpenSpecimen except super administrators.",
+        "user_sign_up": "User Sign Up",
+        "user_sign_up_desc": "Enable or disable users sign up feature."
       },
 
       "biospecimen": {
@@ -2214,7 +2218,9 @@
         "deployment_site_url": "Deployment Site URL",
         "deployment_site_url_desc": "Website URL to navigate users on clicking deployment site logo",
         "cont_spmns_report_query": "Container Specimens Report",
-        "cont_spmns_report_query_desc": "Saved query to use for generating container specimens report"
+        "cont_spmns_report_query_desc": "Saved query to use for generating container specimens report",
+        "toast_disp_time": "Toast Display Time",
+        "toast_disp_time_desc": "Duration, in seconds, for which the success or error notification toasts should be displayed."
       },
 
       "email": {
@@ -2288,7 +2294,9 @@
         "max_concurrent_queries": "Concurrent Queries Limit",
         "max_concurrent_queries_desc": "Maximum number of queries that are allowed to run simultaneously before rejecting new query execution requests",
         "max_recs_in_memory": "In-memory Records Limit",
-        "max_recs_in_memory_desc": "Maximum number of query records that are allowed to be cached in-memory. When limit is reached, excessive records are spooled to disk"
+        "max_recs_in_memory_desc": "Maximum number of query records that are allowed to be cached in-memory. When limit is reached, excessive records are spooled to disk",
+        "default_result_view": "Default Result View Fields",
+        "default_result_view_desc": "List of field values to be displayed in default query result view."
       },
 
       "training": {

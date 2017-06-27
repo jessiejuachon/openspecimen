@@ -388,7 +388,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 			String value = getStrSetting(module, name, (String)null);
 			if (StringUtils.isBlank(value)) {
-				if (defValue != null && defValue.length > 0) {
+				if (defValue != null && defValue.length > 0 && defValue[0] != null) {
 					contentType = Utility.getContentType(defValue[0]);
 					filename = defValue[0].getName();
 					in = new FileInputStream(defValue[0]);
@@ -532,6 +532,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		props.put("feedback_enabled",        getBoolSetting("common", "feedback_enabled", true));
 		props.put("mrn_restriction_enabled", getBoolSetting("biospecimen", "mrn_restriction_enabled", false));
 		props.put("deploy_env",              getStrSetting("common", "deploy_env"));
+		props.put("user_sign_up",            getBoolSetting("administrative", "user_sign_up", true));
+		props.put("forgot_password",         getBoolSetting("auth", "forgot_password", true));
+		props.put("toast_disp_time",         getIntSetting("common", "toast_disp_time", 5));
 		return props;
 	}
 
