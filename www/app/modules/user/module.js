@@ -46,6 +46,12 @@ angular.module('openspecimen')
         controller: 'ForgotPasswordCtrl',
         parent: 'default-nav-buttons'
       })
+      .state('resend-otp', {
+        url: '/resend-otp',
+        templateUrl: 'modules/user/resend-otp.html',
+        controller: 'ResendOtpCtrl',
+        parent: 'default-nav-buttons'
+      })
       .state('reset-password', {
         url: '/reset-password',
         templateUrl: 'modules/user/reset-password.html',

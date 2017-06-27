@@ -611,6 +611,7 @@
             <value>/reset-password</value>
             <value>/forgot-password</value>
             <value>/sign-up</value>
+            <value>/tfauth/reset-otp</value>
           </list>
         </entry>
         <entry key="GET">
