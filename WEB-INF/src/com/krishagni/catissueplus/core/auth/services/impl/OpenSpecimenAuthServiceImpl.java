@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 
 import com.krishagni.catissueplus.core.auth.domain.AuthErrorCode;
+import com.krishagni.catissueplus.core.auth.events.LoginDetail;
 import com.krishagni.catissueplus.core.auth.services.AuthenticationService;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 
@@ -24,10 +25,12 @@ public class OpenSpecimenAuthServiceImpl implements AuthenticationService {
 	}
 
 	@Override
-	public void authenticate(String username, String password) {
+	public void authenticate(LoginDetail authLoginDetail) {
 		try{
 			UsernamePasswordAuthenticationToken authenticationToken =
-				new UsernamePasswordAuthenticationToken(username, password);
+					new UsernamePasswordAuthenticationToken(
+							authLoginDetail.getLoginName(), 
+							authLoginDetail.getPassword());
 		
 			authManager.authenticate(authenticationToken);
 		} catch(AuthenticationException e) {

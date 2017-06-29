@@ -89,9 +89,10 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService,
 			}
 			
 			AuthenticationService authService = user.getAuthDomain().getAuthProviderInstance();
-			authService.authenticate(loginDetail.getLoginName(), loginDetail.getPassword());
+			authService.authenticate(loginDetail);
+			
 			//authenticates otp if totp is enabled
-			authenticateOtp(loginDetail);
+			//authenticateOtp(loginDetail);
 			
 			Map<String, Object> authDetail = new HashMap<String, Object>();
 			authDetail.put("user", user);

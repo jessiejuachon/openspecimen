@@ -10,6 +10,7 @@ import org.springframework.security.ldap.authentication.LdapAuthenticationProvid
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 
 import com.krishagni.catissueplus.core.auth.domain.AuthErrorCode;
+import com.krishagni.catissueplus.core.auth.events.LoginDetail;
 import com.krishagni.catissueplus.core.auth.services.AuthenticationService;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 
@@ -26,10 +27,12 @@ public class LdapAuthenticationServiceImpl implements AuthenticationService {
 	}
 	
 	@Override
-	public void authenticate(String username, String password) {
+	public void authenticate(LoginDetail authLoginDetail) {
 		try {
 			UsernamePasswordAuthenticationToken authenticationToken =
-				new UsernamePasswordAuthenticationToken(username, password);
+				new UsernamePasswordAuthenticationToken(
+						authLoginDetail.getLoginName(), 
+						authLoginDetail.getPassword());
 		
 			provider.authenticate(authenticationToken);
 		} catch (AuthenticationException e) {
