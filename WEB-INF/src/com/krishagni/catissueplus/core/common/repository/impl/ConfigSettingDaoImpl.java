@@ -34,6 +34,26 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 			.setParameter("settingId", settingId)
 			.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ConfigSetting> getAllUserSettings(Long userId) {
+		return getCurrentSession().getNamedQuery(GET_ALL_USER)
+			.setParameter("userId",userId)
+			.list();
+				
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ConfigSetting> getAllUserByModuleSettings(Long userId ,String moduleName) {
+		return getCurrentSession().getNamedQuery(GET_ALL_USER_BY_MODULE)
+			.setParameter("userId",userId)
+			.setString("moduleName", moduleName)
+			.list();
+				
+	}
+
 
 	private static final String FQN = ConfigSetting.class.getName();
 	
@@ -42,4 +62,8 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	private static final String GET_ALL_BY_MODULE = FQN + ".getAllByModule";
 
 	private static final String GET_ALL_LATER_THAN = FQN + ".getAllLaterThan";
+	
+	private static final String GET_ALL_USER = FQN + ".getAllUser";
+	
+	private static final String GET_ALL_USER_BY_MODULE = FQN + ".getAllUserByModule";
 }

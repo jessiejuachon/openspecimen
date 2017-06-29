@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.krishagni.catissueplus.core.administrative.events.UserDetail;
+import com.krishagni.catissueplus.core.administrative.repository.impl.UserDaoImpl;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.DataType;
@@ -36,7 +36,7 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		
 	private AccessLevel accessLevel;
 	
-	private UserDetail user;
+	private Long objId;
 
 	public String getModule() {
 		return module;
@@ -118,13 +118,14 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		this.accessLevel = accessLevel;
 	}
 	
-	public UserDetail getUser() {
-		return user;
+	public Long getObjId() {
+		return objId;
 	}
 
-	public void setUser(UserDetail user) {
-		this.user = user;
+	public void setObjId(Long objId) {
+		this.objId = objId;
 	}
+	
 
 	@Override
 	public int compareTo(ConfigSettingDetail o) {
@@ -141,6 +142,7 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		
 		ConfigProperty property = setting.getProperty();
 		Module module = property.getModule();
+		UserDaoImpl userDao = null;
 		
 		result.setModule(module.getName());
 		result.setName(property.getName());
@@ -151,6 +153,8 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		result.setSecured(property.isSecured());
 		result.setValue(property.isSecured() ? "********" : setting.getValue());
 		result.setActivationDate(setting.getActivationDate());
+		result.setObjId(setting.getObjId());
+		result.setAccessLevel(setting.getaccessLevel());
 		return result;
 	}
 	

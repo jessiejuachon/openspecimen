@@ -81,4 +81,6 @@
 
   <include file="db/4.2/schema.xml"/>
   <include file="db/4.2/config.xml"/>
+  <include file="db/4.2/seed-data.xml"/>
+  
 </databaseChangeLog>

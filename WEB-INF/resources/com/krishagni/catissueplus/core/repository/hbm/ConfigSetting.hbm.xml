@@ -36,6 +36,7 @@
       from
         com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
       where
+        cs.accessLevel = 'System' and
         cs.activityStatus = 'Active'
     </query>
 
@@ -47,6 +48,7 @@
         join cs.property prop 
         join prop.module module
       where
+        cs.accessLevel = 'System' and
         cs.activityStatus = 'Active' and 
         module.name = :name
     </query>
@@ -60,5 +62,31 @@
         cs.activityStatus = 'Active' and
         cs.id > :settingId
     </query>
+    
+    <query name="getAllUser">
+      select 
+        cs
+      from
+        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
+      where
+        cs.objId = :userId and
+        cs.accessLevel = 'User' and
+        cs.activityStatus = 'Active'
+    </query>
+    
+    <query name="getAllUserByModule">
+      select
+        cs
+      from
+        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
+        join cs.property prop 
+        join prop.module module
+      where
+        cs.objId = :userId and
+        cs.accessLevel = 'User' and
+        module.name = :moduleName and
+        cs.activityStatus = 'Active'
+    </query>
+    
   </class>
 </hibernate-mapping>

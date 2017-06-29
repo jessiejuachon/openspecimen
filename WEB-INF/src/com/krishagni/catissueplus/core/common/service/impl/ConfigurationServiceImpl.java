@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.Pair;
@@ -77,16 +78,22 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req) {
 		String module = req.getPayload();
 
+		User user = AuthUtil.getCurrentUser(); 
 		List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
+		List<ConfigSetting> userSettings = new ArrayList<ConfigSetting>();
 		if (StringUtils.isBlank(module)) {
 			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
 				settings.addAll(moduleSettings.values());
 			}
+			userSettings = daoFactory.getConfigSettingDao().getAllUserSettings(user.getId());
+			settings.addAll(userSettings);
 		} else {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 			if (moduleSettings != null) {
 				settings.addAll(moduleSettings.values());
 			}
+			userSettings = daoFactory.getConfigSettingDao().getAllUserByModuleSettings(user.getId(), module);
+			settings.addAll(userSettings);
 		}
 		
 		return ResponseEvent.response(ConfigSettingDetail.from(settings));
@@ -124,7 +131,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		String module = detail.getModule();
 		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 		if (moduleSettings == null || moduleSettings.isEmpty()) {
-		  	return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
+			return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 		}
 		
 		String prop = detail.getName();
@@ -151,15 +158,15 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		  	successful = true;
 		  	return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
 		} catch (OpenSpecimenException ose) {
-		  	return ResponseEvent.error(ose);
+			return ResponseEvent.error(ose);
 		} catch (Exception e) {
-		  	return ResponseEvent.serverError(e);
+			return ResponseEvent.serverError(e);
 		} finally {
-		  	if (successful) {
-		  		deleteOldSettingFile(existing);
-		  	} else {
-		  		existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-		  		moduleSettings.put(prop, existing);
+			if (successful) {
+				deleteOldSettingFile(existing);
+			} else {
+				existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
+				moduleSettings.put(prop, existing);
 		  	}
 		}
 	}
