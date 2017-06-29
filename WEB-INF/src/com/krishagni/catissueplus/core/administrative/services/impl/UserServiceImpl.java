@@ -241,10 +241,9 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 				sendUserCreatedEmail(user, token);
 			}
 			
-			//SignUp event is published 
+			//SignUp event is published
 			Event signUpEvent = new Event(detail,OpenSpecimenEventCode.USER_SIGNUP.code());
 			publisher.publishEvent(signUpEvent);
-			
 			
 			return ResponseEvent.response(UserDetail.from(user));
 		} catch (OpenSpecimenException ose) {

@@ -1,6 +1,6 @@
 package com.krishagni.catissueplus.core.events.eventcodes;
 
-public enum OpenSpecimenEventCode implements EventCode{
+public enum OpenSpecimenEventCode implements EventCode {
 	
 	USER_SIGNUP,
 	
@@ -10,5 +10,4 @@ public enum OpenSpecimenEventCode implements EventCode{
 	public String code() {
 		return this.name();
 	}
-	
 }

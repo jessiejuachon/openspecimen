@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
@@ -36,14 +34,10 @@ import com.krishagni.catissueplus.core.common.util.AuthUtil;
 import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.EmailUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
-import com.krishagni.catissueplus.core.events.Event;
-import com.krishagni.catissueplus.core.events.eventcodes.OpenSpecimenEventCode;
 
-public class UserAuthenticationServiceImpl implements UserAuthenticationService, ApplicationEventPublisherAware {
+public class UserAuthenticationServiceImpl implements UserAuthenticationService {
 	private static final String ACCOUNT_LOCKED_NOTIF_TMPL = "account_locked_notification";
 
-	private ApplicationEventPublisher publisher;
-	
 	private DaoFactory daoFactory;
 	
 	private AuditService auditService;
@@ -56,11 +50,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService,
 		this.auditService = auditService;
 	}
 	
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-		this.publisher = publisher;
-	}
-
 	@Override
 	@PlusTransactional
 	public ResponseEvent<Map<String, Object>> authenticateUser(RequestEvent<LoginDetail> req) {
@@ -90,9 +79,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService,
 			
 			AuthenticationService authService = user.getAuthDomain().getAuthProviderInstance();
 			authService.authenticate(loginDetail);
-			
-			//authenticates otp if totp is enabled
-			//authenticateOtp(loginDetail);
 			
 			Map<String, Object> authDetail = new HashMap<String, Object>();
 			authDetail.put("user", user);
@@ -259,9 +245,4 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService,
 		EmailUtil.getInstance().sendEmail(ACCOUNT_LOCKED_NOTIF_TMPL, rcpts, null, emailProps);
 	}
 	
-	private void authenticateOtp(LoginDetail loginDetail) {
-		Event otpEvent = new Event(loginDetail,OpenSpecimenEventCode.OTP_CHECK.code());
-		publisher.publishEvent(otpEvent);
-		
-	}
 }

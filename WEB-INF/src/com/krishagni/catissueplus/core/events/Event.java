@@ -8,8 +8,7 @@ import org.springframework.context.ApplicationEvent;
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 
-public class Event extends ApplicationEvent{
-
+public class Event extends ApplicationEvent {
 	private String eventName;
 	
 	private Object source;
@@ -57,5 +56,4 @@ public class Event extends ApplicationEvent{
 	public void setTime(Date time) {
 		this.time = time;
 	}	
-	
 }
