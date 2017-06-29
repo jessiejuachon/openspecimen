@@ -56,12 +56,10 @@ import com.krishagni.catissueplus.core.common.repository.ConfigSettingDao;
 import com.krishagni.catissueplus.core.common.repository.UnhandledExceptionDao;
 import com.krishagni.catissueplus.core.common.repository.UniqueIdGenerator;
 import com.krishagni.catissueplus.core.common.repository.UpgradeLogDao;
-import com.krishagni.catissueplus.core.common.repository.UserConfigSettingDao;
 import com.krishagni.catissueplus.core.common.repository.impl.ConfigSettingDaoImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UnhandledExceptionDaoImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UniqueIdGeneratorImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UpgradeLogDaoImpl;
-import com.krishagni.catissueplus.core.common.repository.impl.UserConfigSettingDaoImpl;
 
 public class DaoFactoryImpl implements DaoFactory {
 	private SessionFactory sessionFactory;
@@ -240,13 +238,6 @@ public class DaoFactoryImpl implements DaoFactory {
 		return dao;
 	}
 	
-	@Override
-	public UserConfigSettingDao getUserConfigSettingDao() {
-		UserConfigSettingDaoImpl dao = new UserConfigSettingDaoImpl(); 
-		setSessionFactory(dao);
-		return dao;
-	}
-
 	@Override
 	public LabelPrintJobDao getLabelPrintJobDao() {
 		LabelPrintJobDaoImpl dao = new LabelPrintJobDaoImpl();

@@ -8,12 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.krishagni.catissueplus.core.administrative.events.UserDetail;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
+import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.DataType;
-import com.krishagni.catissueplus.core.common.domain.ConfigProperty.PropertyType;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
-import com.krishagni.catissueplus.core.common.domain.UserConfigSetting;
 
 public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	private String module;
@@ -33,8 +33,10 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	private Date activationDate;
 	
 	private boolean secured;
+		
+	private AccessLevel accessLevel;
 	
-	private PropertyType propertyType;
+	private UserDetail user;
 
 	public String getModule() {
 		return module;
@@ -108,12 +110,20 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		this.secured = secured;
 	}
 	
-	public PropertyType getPropertyType() {
-		return propertyType;
+	public AccessLevel getAccessLevel() {
+		return accessLevel;
 	}
 
-	public void setPropertyType(PropertyType propertyType) {
-		this.propertyType = propertyType;
+	public void setAccessLevel(AccessLevel accessLevel) {
+		this.accessLevel = accessLevel;
+	}
+	
+	public UserDetail getUser() {
+		return user;
+	}
+
+	public void setUser(UserDetail user) {
+		this.user = user;
 	}
 
 	@Override
@@ -141,7 +151,6 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		result.setSecured(property.isSecured());
 		result.setValue(property.isSecured() ? "********" : setting.getValue());
 		result.setActivationDate(setting.getActivationDate());
-		result.setPropertyType(property.getPropertyType());
 		return result;
 	}
 	
@@ -154,16 +163,5 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		
 		Collections.sort(result);
 		return result;
-	}
-	
-	public static List<ConfigSettingDetail> from(List<UserConfigSetting> settings) {
-		List<ConfigSettingDetail> result = new ArrayList<>();
-       
-		for(UserConfigSetting setting : settings){
-			result.add(from(setting));
-		}
-      
-		Collections.sort(result);
-		return result;	
 	}
 }

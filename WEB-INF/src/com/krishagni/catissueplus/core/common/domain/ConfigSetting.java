@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
+import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 
 public class ConfigSetting extends BaseEntity {
 	private ConfigProperty property;
@@ -15,6 +16,10 @@ public class ConfigSetting extends BaseEntity {
 	private Date activationDate;
 	
 	private String activityStatus;
+	
+	private AccessLevel accessLevel;
+	
+	private Long objId;
 	
 	public ConfigProperty getProperty() {
 		return property;
@@ -54,5 +59,21 @@ public class ConfigSetting extends BaseEntity {
 
 	public void setActivityStatus(String activityStatus) {
 		this.activityStatus = activityStatus;
+	}
+
+	public AccessLevel getaccessLevel() {
+		return accessLevel;
+	}
+
+	public void setaccessLevel(AccessLevel accessLevel) {
+		this.accessLevel = accessLevel;
+	}
+
+	public Long getObjId() {
+		return objId;
+	}
+
+	public void setObjId(Long objId) {
+		this.objId = objId;
 	}
 }

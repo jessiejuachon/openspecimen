@@ -20,6 +20,15 @@
     <property name="activationDate" column="ACTIVATION_DATE" not-null="true"/>
 
     <property name="activityStatus" column="ACTIVITY_STATUS" not-null="true"/>
+    
+    <property name="accessLevel" column="ACCESS_LEVEL" not-null="true">
+      <type name="org.hibernate.type.EnumType">
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.ConfigProperty$AccessLevel</param>
+        <param name="type">12</param>
+      </type>
+    </property>
+      
+    <property name="objId" column="OBJECT_ID"/>
 
     <query name="getAll">
       select 

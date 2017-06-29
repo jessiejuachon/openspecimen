@@ -1,5 +1,6 @@
 package com.krishagni.catissueplus.core.common.domain;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
@@ -14,7 +15,7 @@ public class ConfigProperty extends BaseEntity {
 		FILE
 	};
 	
-	public enum PropertyType {
+	public enum AccessLevel {
 		System,
 		User
 	};
@@ -31,7 +32,7 @@ public class ConfigProperty extends BaseEntity {
 	
 	private DataType dataType;
 	
-	private PropertyType propertyType;
+	private Set<AccessLevel> accessLevels = new HashSet<>();
 	
 	private boolean secured;
 
@@ -82,15 +83,15 @@ public class ConfigProperty extends BaseEntity {
 	public void setDataType(DataType dataType) {
 		this.dataType = dataType;
 	}
+
+   	public Set<AccessLevel> getAccessLevels() {
+		return accessLevels;
+	}
+
+	public void setAccessLevels(Set<AccessLevel> accessLevels) {
+		this.accessLevels = accessLevels;
+	}
 	
-	public PropertyType getPropertyType() {
-		return propertyType;
-	}
-
-	public void setPropertyType(PropertyType propertyType) {
-		this.propertyType = propertyType;
-	}
-
 	public boolean isSecured() {
 		return secured;
 	}

@@ -20,9 +20,6 @@ public interface ConfigurationService {
 	public ResponseEvent<File> getSettingFile(RequestEvent<Pair<String, String>> req);
 
 	public ResponseEvent<String> uploadSettingFile(RequestEvent<FileDetail> req);
-	
-	ResponseEvent<List<ConfigSettingDetail>> getUserConfigSettings();
-
 		
 	//
 	// Internal to app APIs

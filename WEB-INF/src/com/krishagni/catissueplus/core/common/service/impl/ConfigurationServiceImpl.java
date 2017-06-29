@@ -28,7 +28,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.events.FileDetail;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.Pair;
@@ -39,7 +38,6 @@ import com.krishagni.catissueplus.core.common.domain.ConfigErrorCode;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
-import com.krishagni.catissueplus.core.common.domain.UserConfigSetting;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
@@ -116,33 +114,12 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			return ResponseEvent.serverError(e);
 		}
 	}
-
-	@Override
-	@PlusTransactional
-	public ResponseEvent<List<ConfigSettingDetail>> getUserConfigSettings() {
-		try {
-			User user = AuthUtil.getCurrentUser();
-			List<UserConfigSetting> settings = daoFactory.getUserConfigSettingDao().getAllSettings(user.getId());
-			if (settings.isEmpty()) {
-				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);	
-			}
-		    
-			return ResponseEvent.response(ConfigSettingDetail.from(settings));
-		} catch (OpenSpecimenException ose) {
-			return ResponseEvent.error(ose);
-		} catch (Exception e) {
-			return ResponseEvent.serverError(e);
-		}
-	}
 	
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
 		AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 		ConfigSettingDetail detail = req.getPayload();
-		if (detail.getPropertyType().equals(ConfigProperty.PropertyType.User)) {
-			return saveUserSetting(req);
-		} 
 		
 		String module = detail.getModule();
 		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
@@ -185,53 +162,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		  		moduleSettings.put(prop, existing);
 		  	}
 		}
-		
 	}
 
-	public ResponseEvent<ConfigSettingDetail> saveUserSetting(RequestEvent<ConfigSettingDetail> req){ 	
-		UserConfigSetting existing = null;
-		UserConfigSetting newSetting = null;
-		boolean successful = false;
-		try {
-			User user = AuthUtil.getCurrentUser();
-			ConfigSettingDetail detail = req.getPayload();
-			String module = detail.getModule();
-			String prop = detail.getName();
-			String value = detail.getValue();
-			if (StringUtils.isBlank(module)) {
-		    	return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-			}
-		    
-			if (StringUtils.isBlank(prop)) {
-			    return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-			}
-		    
-			existing = daoFactory.getUserConfigSettingDao().getSettingByModuleAndProperty(user.getId(), module, prop);
-			if (existing == null) {
-				newSetting = new UserConfigSetting(); 
-				newSetting.setConfigUser(user);
-			} else {
-				newSetting = new UserConfigSetting(); 
-				newSetting = createUserSetting(existing, value, user);
-			}
-			 successful = true;
-			 existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
-			 daoFactory.getConfigSettingDao().saveOrUpdate(existing);
-			 daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-			 return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
-		} catch (OpenSpecimenException ose) {
-			return ResponseEvent.error(ose);
-		} catch (Exception e) {
-			return ResponseEvent.serverError(e);
-		} finally {
-			if (successful) {
-				deleteOldSettingFile(existing);
-			} else {
-				existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());	
-			}
-		}
-	}
-	
 	@Override
 	@PlusTransactional
 	public ResponseEvent<File> getSettingFile(RequestEvent<Pair<String, String>> req) {
@@ -660,22 +592,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		return newSetting;
 	}
 	
-	private UserConfigSetting createUserSetting(UserConfigSetting existing, String value,User user) {
-		UserConfigSetting newSetting = new UserConfigSetting();
-		newSetting.setConfigUser(user);
-		newSetting.setProperty(existing.getProperty());
-		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
-		newSetting.setActivationDate(Calendar.getInstance().getTime());
-		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-
-		if (value != null && existing.getProperty().isSecured()) {
-			value = Utility.encrypt(value);
-		}
-		
-		newSetting.setValue(value);
-		return newSetting;
-	}
-
 	private void notifyListeners(String module, String property, String setting) {
 		List<ConfigChangeListener> listeners = changeListeners.get(module);
 		if (listeners == null) {

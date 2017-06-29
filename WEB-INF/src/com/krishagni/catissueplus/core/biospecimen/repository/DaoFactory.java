@@ -22,7 +22,6 @@ import com.krishagni.catissueplus.core.common.repository.ConfigSettingDao;
 import com.krishagni.catissueplus.core.common.repository.UnhandledExceptionDao;
 import com.krishagni.catissueplus.core.common.repository.UniqueIdGenerator;
 import com.krishagni.catissueplus.core.common.repository.UpgradeLogDao;
-import com.krishagni.catissueplus.core.common.repository.UserConfigSettingDao;
 
 public interface DaoFactory {
 	CollectionProtocolDao getCollectionProtocolDao();
@@ -71,8 +70,6 @@ public interface DaoFactory {
 	
 	ConfigSettingDao getConfigSettingDao();
 	
-	UserConfigSettingDao getUserConfigSettingDao();
-	
 	LabelPrintJobDao getLabelPrintJobDao();
 	
 	AuditDao getAuditDao();
@@ -94,5 +91,4 @@ public interface DaoFactory {
 	ContainerStoreListDao getContainerStoreListDao();
 
 	AutoFreezerProviderDao getAutoFreezerProviderDao();
-
 } 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+  <changeSet author="mghodekar" id="Configuration Property Access Level">
+    <createTable tableName="OS_CFG_PROP_ACCESS_LEVEL">
+      <column name="PROPERTY_ID" type="${int.type}">
+        <constraints nullable="false"/>
+      </column>
+      <column name="ACCESS_LEVEL" type="${text.type}(16)" defaultValue="System">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+  
+  <changeSet author="mghodekar" id="FK on property id of config property access level">
+    <addForeignKeyConstraint constraintName="FK_CFG_PROP_ACCESS_LEVEL_PROP"
+      baseTableName="OS_CFG_PROP_ACCESS_LEVEL" baseColumnNames="PROPERTY_ID"
+      referencedTableName="OS_CFG_PROPS" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+   
+  <changeSet author="mghodekar" id="Access level and Object id column for Configuration setting">
+    <addColumn tableName="OS_CFG_SETTINGS">
+      <column name="ACCESS_LEVEL" type="${text.type}(16)" defaultValue="System">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+    <addColumn tableName="OS_CFG_SETTINGS">
+      <column name="OBJECT_ID" type="${int.type}">
+      </column>
+    </addColumn>
+  </changeSet>
+</databaseChangeLog>
