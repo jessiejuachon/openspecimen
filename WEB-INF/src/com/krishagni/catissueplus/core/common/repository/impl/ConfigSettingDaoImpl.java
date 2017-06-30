@@ -15,15 +15,20 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettings() {
-		return getCurrentSession().getNamedQuery(GET_ALL).list();
+	public List<ConfigSetting> getAllSettings(String accessLevel, Long userId) {
+		return getCurrentSession().getNamedQuery(GET_ALL)
+			.setString("accessLevel", accessLevel)
+			.setParameter("userId", userId )
+			.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettingsByModule(String moduleName) {
+	public List<ConfigSetting> getAllSettingsByModule(String moduleName, String accessLevel, Long userId) {
 		return getCurrentSession().getNamedQuery(GET_ALL_BY_MODULE)
 			.setString("name", moduleName)
+			.setString("accessLevel", accessLevel)
+			.setParameter("userId", userId)
 			.list();
 	}
 
@@ -34,27 +39,16 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 			.setParameter("settingId", settingId)
 			.list();
 	}
-	
-	@SuppressWarnings("unchecked")
+		
 	@Override
-	public List<ConfigSetting> getAllUserSettings(Long userId) {
-		return getCurrentSession().getNamedQuery(GET_ALL_USER)
+	public ConfigSetting getUserSettingByModAndProp(Long userId, String moduleName, String propName) {
+		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_USER_SETT_BY_MODULE_PROP)
 			.setParameter("userId",userId)
-			.list();
-				
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<ConfigSetting> getAllUserByModuleSettings(Long userId ,String moduleName) {
-		return getCurrentSession().getNamedQuery(GET_ALL_USER_BY_MODULE)
-			.setParameter("userId",userId)
+			.setString("propName", propName)
 			.setString("moduleName", moduleName)
-			.list();
-				
+			.uniqueResult();
 	}
-
-
+	
 	private static final String FQN = ConfigSetting.class.getName();
 	
 	private static final String GET_ALL = FQN + ".getAll";
@@ -63,7 +57,6 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 
 	private static final String GET_ALL_LATER_THAN = FQN + ".getAllLaterThan";
 	
-	private static final String GET_ALL_USER = FQN + ".getAllUser";
+	private static final String GET_USER_SETT_BY_MODULE_PROP = FQN + ".getUserSettingByModuleAndProp";
 	
-	private static final String GET_ALL_USER_BY_MODULE = FQN + ".getAllUserByModule";
 }

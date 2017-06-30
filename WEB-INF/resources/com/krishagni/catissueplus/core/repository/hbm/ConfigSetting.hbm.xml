@@ -31,12 +31,13 @@
     <property name="objId" column="OBJECT_ID"/>
 
     <query name="getAll">
-      select 
+      select
         cs
       from
         com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
       where
-        cs.accessLevel = 'System' and
+        cs.objId = :userId or cs.objId IS NULL and
+        cs.accessLevel = :accessLevel and
         cs.activityStatus = 'Active'
     </query>
 
@@ -48,7 +49,8 @@
         join cs.property prop 
         join prop.module module
       where
-        cs.accessLevel = 'System' and
+        (cs.objId =:userId or cs.objId IS NULL) and
+        cs.accessLevel = :accessLevel and
         cs.activityStatus = 'Active' and 
         module.name = :name
     </query>
@@ -62,30 +64,20 @@
         cs.activityStatus = 'Active' and
         cs.id > :settingId
     </query>
-    
-    <query name="getAllUser">
+     
+    <query name="getUserSettingByModuleAndProp">
       select 
         cs
-      from
+      from 
         com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
-      where
-        cs.objId = :userId and
-        cs.accessLevel = 'User' and
-        cs.activityStatus = 'Active'
-    </query>
-    
-    <query name="getAllUserByModule">
-      select
-        cs
-      from
-        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
-        join cs.property prop 
+        join cs.property prop
         join prop.module module
-      where
+      where 
         cs.objId = :userId and
         cs.accessLevel = 'User' and
-        module.name = :moduleName and
+        prop.name = :propName and
         cs.activityStatus = 'Active'
+        module.name = :moduleName and  
     </query>
     
   </class>

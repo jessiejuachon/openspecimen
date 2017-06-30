@@ -85,14 +85,14 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllUserSettings(user.getId());
+			userSettings = daoFactory.getConfigSettingDao().getAllSettings("User" ,user.getId());
 			settings.addAll(userSettings);
 		} else {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 			if (moduleSettings != null) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllUserByModuleSettings(user.getId(), module);
+			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, "User", user.getId());
 			settings.addAll(userSettings);
 		}
 		
@@ -103,13 +103,22 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req) {
 		Pair<String, String> payload = req.getPayload();
+		ConfigSetting setting ;
 		try {
+			User user = AuthUtil.getCurrentUser(); 
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
 			if (moduleSettings == null) {
 				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 			}
-
-			ConfigSetting setting = moduleSettings.get(payload.second());
+			
+			ConfigSetting systemSetting = moduleSettings.get(payload.second());
+			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getUserSettingByModAndProp(user.getId(), payload.first(), payload.second());
+			if (userSetting == null) {
+				setting = systemSetting;
+			} else {
+				setting = userSetting;
+			}
+			
 			if (setting == null) {
 				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
 			}
@@ -365,7 +374,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public void reload() {
 		Map<String, Map<String, ConfigSetting>> settingsMap = new ConcurrentHashMap<>();
 		
-		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings();
+		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings("System" ,null);
 		for (ConfigSetting setting : settings) {
 			ConfigProperty prop = setting.getProperty();
 			Hibernate.initialize(prop.getAllowedValues()); // pre-init

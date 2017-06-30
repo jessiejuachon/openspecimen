@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.krishagni.catissueplus.core.administrative.repository.impl.UserDaoImpl;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.DataType;
@@ -142,7 +141,6 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		
 		ConfigProperty property = setting.getProperty();
 		Module module = property.getModule();
-		UserDaoImpl userDao = null;
 		
 		result.setModule(module.getName());
 		result.setName(property.getName());
