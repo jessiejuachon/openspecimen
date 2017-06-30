@@ -39,7 +39,7 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 			.setParameter("settingId", settingId)
 			.list();
 	}
-		
+	
 	@Override
 	public ConfigSetting getUserSettingByModAndProp(Long userId, String moduleName, String propName) {
 		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_USER_SETT_BY_MODULE_PROP)
@@ -58,5 +58,4 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	private static final String GET_ALL_LATER_THAN = FQN + ".getAllLaterThan";
 	
 	private static final String GET_USER_SETT_BY_MODULE_PROP = FQN + ".getUserSettingByModuleAndProp";
-	
 }

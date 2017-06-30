@@ -76,8 +76,8 @@
         cs.objId = :userId and
         cs.accessLevel = 'User' and
         prop.name = :propName and
-        cs.activityStatus = 'Active'
-        module.name = :moduleName and  
+        cs.activityStatus = 'Active' and
+        module.name = :moduleName 
     </query>
     
   </class>
