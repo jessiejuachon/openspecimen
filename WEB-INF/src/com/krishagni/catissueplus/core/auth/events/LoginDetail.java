@@ -1,6 +1,9 @@
 
 package com.krishagni.catissueplus.core.auth.events;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LoginDetail {
 	private String loginName;
 
@@ -16,14 +19,14 @@ public class LoginDetail {
 	
 	private String requestMethod;
 	
-	private Long otp;
+	private Map<String, String> props = new HashMap<String, String>();
 
-	public Long getOtp() {
-		return otp;
+	public Map<String, String> getProps() {
+		return props;
 	}
 
-	public void setOtp(Long otp) {
-		this.otp = otp;
+	public void setProps(Map<String, String> props) {
+		this.props = props;
 	}
 
 	public String getLoginName() {
