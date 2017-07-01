@@ -20,14 +20,14 @@
     <property name="activationDate" column="ACTIVATION_DATE" not-null="true"/>
 
     <property name="activityStatus" column="ACTIVITY_STATUS" not-null="true"/>
-    
-    <property name="accessLevel" column="ACCESS_LEVEL" not-null="true">
+
+    <property name="accessLevel" column="ACCESS_LEVEL">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">com.krishagni.catissueplus.core.common.domain.ConfigProperty$AccessLevel</param>
         <param name="type">12</param>
       </type>
     </property>
-      
+
     <property name="objId" column="OBJECT_ID"/>
 
     <query name="getAll">
@@ -36,7 +36,7 @@
       from
         com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
       where
-        cs.objId = :userId or cs.objId IS NULL and
+        (cs.objId = :objectId or cs.objId IS NULL) and
         cs.accessLevel = :accessLevel and
         cs.activityStatus = 'Active'
     </query>
@@ -49,10 +49,10 @@
         join cs.property prop 
         join prop.module module
       where
-        (cs.objId =:userId or cs.objId IS NULL) and
+        (cs.objId = :objectId or cs.objId IS NULL) and
         cs.accessLevel = :accessLevel and
-        cs.activityStatus = 'Active' and 
-        module.name = :name
+        module.name = :name and
+        cs.activityStatus = 'Active'
     </query>
 
     <query name="getAllLaterThan">
@@ -64,21 +64,21 @@
         cs.activityStatus = 'Active' and
         cs.id > :settingId
     </query>
-     
-    <query name="getUserSettingByModuleAndProp">
-      select 
+
+    <query name="getSettingByModuleAndProp">
+      select
         cs
-      from 
+      from
         com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
         join cs.property prop
         join prop.module module
-      where 
-        cs.objId = :userId and
-        cs.accessLevel = 'User' and
+      where
+        (cs.objId = :objectId or cs.objId IS NULL) and
+        cs.accessLevel = :accessLevel and
         prop.name = :propName and
-        cs.activityStatus = 'Active' and
-        module.name = :moduleName 
+        module.name = :moduleName and
+        cs.activityStatus = 'Active'
     </query>
-    
+
   </class>
 </hibernate-mapping>

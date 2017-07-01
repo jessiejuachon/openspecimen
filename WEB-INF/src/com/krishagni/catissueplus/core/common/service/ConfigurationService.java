@@ -11,6 +11,7 @@ import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 
 public interface ConfigurationService {
+	
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req);
 
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req);

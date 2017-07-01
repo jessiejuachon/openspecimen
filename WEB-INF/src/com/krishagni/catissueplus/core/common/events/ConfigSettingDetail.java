@@ -32,9 +32,9 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	private Date activationDate;
 	
 	private boolean secured;
-		
-	private AccessLevel accessLevel;
-	
+
+	private String accessLevel;
+
 	private Long objId;
 
 	public String getModule() {
@@ -108,15 +108,15 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	public void setSecured(boolean secured) {
 		this.secured = secured;
 	}
-	
-	public AccessLevel getAccessLevel() {
+
+	public String getAccessLevel() {
 		return accessLevel;
 	}
 
-	public void setAccessLevel(AccessLevel accessLevel) {
+	public void setAccessLevel(String accessLevel) {
 		this.accessLevel = accessLevel;
 	}
-	
+
 	public Long getObjId() {
 		return objId;
 	}
@@ -124,7 +124,6 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	public void setObjId(Long objId) {
 		this.objId = objId;
 	}
-	
 
 	@Override
 	public int compareTo(ConfigSettingDetail o) {
@@ -151,8 +150,8 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		result.setSecured(property.isSecured());
 		result.setValue(property.isSecured() ? "********" : setting.getValue());
 		result.setActivationDate(setting.getActivationDate());
+		result.setAccessLevel(setting.getaccessLevel().name());
 		result.setObjId(setting.getObjId());
-		result.setAccessLevel(setting.getaccessLevel());
 		return result;
 	}
 	

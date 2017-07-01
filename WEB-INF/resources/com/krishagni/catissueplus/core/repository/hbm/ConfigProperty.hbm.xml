@@ -31,7 +31,7 @@
         <param name="type">12</param>
       </type>
     </property>
-     
+
     <set name="accessLevels" table="OS_CFG_PROP_ACCESS_LEVEL">
       <key column="PROPERTY_ID"/>
       <element column="ACCESS_LEVEL" type="string"/>

@@ -12,5 +12,5 @@ public interface ConfigSettingDao extends Dao<ConfigSetting> {
 
 	List<ConfigSetting> getSettingsLaterThan(Long settingId);
 
-	ConfigSetting getUserSettingByModAndProp(Long userId, String moduleName, String propName);
+	ConfigSetting getSettingByModAndProp(Long userId, String moduleName, String propName, String accessLevel);
 }

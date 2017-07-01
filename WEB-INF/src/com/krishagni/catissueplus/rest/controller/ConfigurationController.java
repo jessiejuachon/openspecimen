@@ -47,7 +47,7 @@ public class ConfigurationController {
 
 		@RequestParam(value = "property", required = false)
 		String propertyName) {
-	    
+
 		if (StringUtils.isNotBlank(moduleName) && StringUtils.isNotBlank(propertyName)) {
 			ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
 			return Collections.singletonList(setting);

@@ -15,20 +15,18 @@
       </column>
     </createTable>
   </changeSet>
-  
+
   <changeSet author="mghodekar" id="FK on property id of config property access level">
     <addForeignKeyConstraint constraintName="FK_CFG_PROP_ACCESS_LEVEL_PROP"
       baseTableName="OS_CFG_PROP_ACCESS_LEVEL" baseColumnNames="PROPERTY_ID"
       referencedTableName="OS_CFG_PROPS" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
-   
+
   <changeSet author="mghodekar" id="Access level and Object id column for Configuration setting">
     <addColumn tableName="OS_CFG_SETTINGS">
       <column name="ACCESS_LEVEL" type="${text.type}(16)" defaultValue="System">
         <constraints nullable="false"/>
       </column>
-    </addColumn>
-    <addColumn tableName="OS_CFG_SETTINGS">
       <column name="OBJECT_ID" type="${int.type}">
       </column>
     </addColumn>

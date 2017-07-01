@@ -19,7 +19,7 @@ public class ConfigProperty extends BaseEntity {
 		System,
 		User
 	};
-	
+
 	private Module module;
 	
 	private String name;
@@ -33,7 +33,7 @@ public class ConfigProperty extends BaseEntity {
 	private DataType dataType;
 	
 	private Set<AccessLevel> accessLevels = new HashSet<>();
-	
+
 	private boolean secured;
 
 	public Module getModule() {
@@ -75,7 +75,7 @@ public class ConfigProperty extends BaseEntity {
 	public void setAllowedValues(Set<String> allowedValues) {
 		this.allowedValues = allowedValues;
 	}
-	
+
 	public DataType getDataType() {
 		return dataType;
 	}
@@ -84,14 +84,14 @@ public class ConfigProperty extends BaseEntity {
 		this.dataType = dataType;
 	}
 
-   	public Set<AccessLevel> getAccessLevels() {
+	public Set<AccessLevel> getAccessLevels() {
 		return accessLevels;
 	}
 
 	public void setAccessLevels(Set<AccessLevel> accessLevels) {
 		this.accessLevels = accessLevels;
 	}
-	
+
 	public boolean isSecured() {
 		return secured;
 	}

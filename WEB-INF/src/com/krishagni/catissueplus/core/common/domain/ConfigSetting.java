@@ -8,19 +8,19 @@ import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 
 public class ConfigSetting extends BaseEntity {
 	private ConfigProperty property;
-	
+
 	private String value;
-	
+
 	private User activatedBy;
-	
+
 	private Date activationDate;
-	
+
 	private String activityStatus;
-	
+
 	private AccessLevel accessLevel;
-	
+
 	private Long objId;
-	
+
 	public ConfigProperty getProperty() {
 		return property;
 	}

@@ -15,20 +15,20 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettings(String accessLevel, Long userId) {
+	public List<ConfigSetting> getAllSettings(String accessLevel, Long objectId) {
 		return getCurrentSession().getNamedQuery(GET_ALL)
 			.setString("accessLevel", accessLevel)
-			.setParameter("userId", userId )
+			.setParameter("objectId", objectId)
 			.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettingsByModule(String moduleName, String accessLevel, Long userId) {
+	public List<ConfigSetting> getAllSettingsByModule(String moduleName, String accessLevel, Long objectId) {
 		return getCurrentSession().getNamedQuery(GET_ALL_BY_MODULE)
 			.setString("name", moduleName)
 			.setString("accessLevel", accessLevel)
-			.setParameter("userId", userId)
+			.setParameter("objectId", objectId)
 			.list();
 	}
 
@@ -39,16 +39,17 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 			.setParameter("settingId", settingId)
 			.list();
 	}
-	
+
 	@Override
-	public ConfigSetting getUserSettingByModAndProp(Long userId, String moduleName, String propName) {
-		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_USER_SETT_BY_MODULE_PROP)
-			.setParameter("userId",userId)
+	public ConfigSetting getSettingByModAndProp(Long objectId, String moduleName, String propName, String accessLevel) {
+		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_SETTING_BY_MODULE_PROP)
+			.setParameter("objectId", objectId)
 			.setString("propName", propName)
 			.setString("moduleName", moduleName)
+			.setString("accessLevel", accessLevel)
 			.uniqueResult();
 	}
-	
+
 	private static final String FQN = ConfigSetting.class.getName();
 	
 	private static final String GET_ALL = FQN + ".getAll";
@@ -56,6 +57,6 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	private static final String GET_ALL_BY_MODULE = FQN + ".getAllByModule";
 
 	private static final String GET_ALL_LATER_THAN = FQN + ".getAllLaterThan";
-	
-	private static final String GET_USER_SETT_BY_MODULE_PROP = FQN + ".getUserSettingByModuleAndProp";
+
+	private static final String GET_SETTING_BY_MODULE_PROP = FQN + ".getSettingByModuleAndProp";
 }

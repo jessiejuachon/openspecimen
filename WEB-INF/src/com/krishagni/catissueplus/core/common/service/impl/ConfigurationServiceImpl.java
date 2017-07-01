@@ -78,21 +78,22 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req) {
 		String module = req.getPayload();
 
-		User user = AuthUtil.getCurrentUser(); 
+		User user = AuthUtil.getCurrentUser();
 		List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
-		List<ConfigSetting> userSettings = new ArrayList<ConfigSetting>();
+		List<ConfigSetting> userSettings = new ArrayList<>();
 		if (StringUtils.isBlank(module)) {
 			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllSettings("User" ,user.getId());
+
+			userSettings = daoFactory.getConfigSettingDao().getAllSettings("User", user.getId());
 			settings.addAll(userSettings);
 		} else {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 			if (moduleSettings != null) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, "User", user.getId());
+			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, ConfigProperty.AccessLevel.User.name(), user.getId());
 			settings.addAll(userSettings);
 		}
 		
@@ -103,22 +104,22 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req) {
 		Pair<String, String> payload = req.getPayload();
-		ConfigSetting setting ;
+		ConfigSetting setting;
 		try {
-			User user = AuthUtil.getCurrentUser(); 
+			User user = AuthUtil.getCurrentUser();
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
 			if (moduleSettings == null) {
 				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 			}
-			
+
 			ConfigSetting systemSetting = moduleSettings.get(payload.second());
-			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getUserSettingByModAndProp(user.getId(), payload.first(), payload.second());
+			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp(user.getId(), payload.first(), payload.second(), ConfigProperty.AccessLevel.User.name());
 			if (userSetting == null) {
 				setting = systemSetting;
 			} else {
 				setting = userSetting;
 			}
-			
+
 			if (setting == null) {
 				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
 			}
@@ -130,13 +131,13 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			return ResponseEvent.serverError(e);
 		}
 	}
-	
+
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
 		AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 		ConfigSettingDetail detail = req.getPayload();
-		
+
 		String module = detail.getModule();
 		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 		if (moduleSettings == null || moduleSettings.isEmpty()) {
@@ -151,21 +152,21 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		
 		String setting = detail.getValue();
 		if (!isValidSetting(existing.getProperty(), setting)) {
-		  	return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
+			return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
 		}
 		
 		boolean successful = false;
 		try {
-		  	ConfigSetting newSetting = createSetting(existing, setting);
-		  	existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
+			ConfigSetting newSetting = createSetting(existing, setting);
+			existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
 
-		  	daoFactory.getConfigSettingDao().saveOrUpdate(existing);
-		  	daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-		  	moduleSettings.put(prop, newSetting);
+			daoFactory.getConfigSettingDao().saveOrUpdate(existing);
+			daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
+			moduleSettings.put(prop, newSetting);
 			
-		  	notifyListeners(module, prop, setting);
-		  	successful = true;
-		  	return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
+			notifyListeners(module, prop, setting);
+			successful = true;
+			return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
@@ -176,7 +177,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			} else {
 				existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
 				moduleSettings.put(prop, existing);
-		  	}
+			}
 		}
 	}
 
@@ -374,7 +375,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public void reload() {
 		Map<String, Map<String, ConfigSetting>> settingsMap = new ConcurrentHashMap<>();
 		
-		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings("System" ,null);
+		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings(ConfigProperty.AccessLevel.System.name(), null);
 		for (ConfigSetting setting : settings) {
 			ConfigProperty prop = setting.getProperty();
 			Hibernate.initialize(prop.getAllowedValues()); // pre-init
@@ -607,7 +608,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		newSetting.setValue(value);
 		return newSetting;
 	}
-	
+
 	private void notifyListeners(String module, String property, String setting) {
 		List<ConfigChangeListener> listeners = changeListeners.get(module);
 		if (listeners == null) {

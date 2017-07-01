@@ -5,13 +5,13 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
-  <changeSet author="mghodekar" id="Add property access level" dbms="mysql">
+  <changeSet author="mghodekar" id="Add property access level">
     <sql>
-      insert into os_cfg_prop_access_level(PROPERTY_ID,ACCESS_LEVEL)
-        select 
-          cp.identifier,'System' 
-        from 
+      insert into os_cfg_prop_access_level(PROPERTY_ID, ACCESS_LEVEL)
+        select
+          cp.identifier,'System'
+        from
           os_cfg_props cp;
-    </sql>        
+    </sql>
   </changeSet>
 </databaseChangeLog>
