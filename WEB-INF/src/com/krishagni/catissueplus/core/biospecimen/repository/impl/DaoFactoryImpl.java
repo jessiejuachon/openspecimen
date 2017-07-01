@@ -237,7 +237,7 @@ public class DaoFactoryImpl implements DaoFactory {
 		setSessionFactory(dao);
 		return dao;
 	}
-	
+
 	@Override
 	public LabelPrintJobDao getLabelPrintJobDao() {
 		LabelPrintJobDaoImpl dao = new LabelPrintJobDaoImpl();
