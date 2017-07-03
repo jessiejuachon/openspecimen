@@ -1094,7 +1094,7 @@
     "proceed_sign_up": "Proceed to Sign Up",
     "welcome_title": "OpenSpecimen Introduction in One Minute"
   },
-  
+
   "forgot_password": {
     "title": "Forgot Password",
     "email_reset_password_link": "Email Reset Password Link",
