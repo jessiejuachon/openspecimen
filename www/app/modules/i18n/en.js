@@ -1095,7 +1095,7 @@
     "welcome_title": "OpenSpecimen Introduction in One Minute"
   },
   
-  	"forgot_password": {
+  "forgot_password": {
     "title": "Forgot Password",
     "email_reset_password_link": "Email Reset Password Link",
     "return_to_signin": "Return to sign in page",
