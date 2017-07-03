@@ -256,12 +256,11 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			} else {
 				ForgotPasswordToken token = generateForgotPwdToken(user);
 				sendUserCreatedEmail(user, token);
+				
+				OpenSpecimenEvent userCreatedEvent = new OpenSpecimenEvent(detail,OpenSpecimenEventCode.USER_CREATED.code());
+				publisher.publishEvent(userCreatedEvent);
 			}
-			
-			//SignUp event is published
-			OpenSpecimenEvent signUpEvent = new OpenSpecimenEvent(detail,OpenSpecimenEventCode.USER_SIGNUP.code());
-			publisher.publishEvent(signUpEvent);
-			
+
 			return ResponseEvent.response(UserDetail.from(user));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -822,6 +821,9 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 		if (prevStatus.equals(Status.ACTIVITY_STATUS_PENDING.getStatus())) {
 			ForgotPasswordToken token = generateForgotPwdToken(user);
 			sendUserCreatedEmail(user, token);
+			
+			OpenSpecimenEvent userCreatedEvent = new OpenSpecimenEvent(UserDetail.from(user),OpenSpecimenEventCode.USER_CREATED.code());
+			publisher.publishEvent(userCreatedEvent);
 		} else if (prevStatus.equals(Status.ACTIVITY_STATUS_LOCKED.getStatus())) {
 			addAutoLogin(user);
 		}
