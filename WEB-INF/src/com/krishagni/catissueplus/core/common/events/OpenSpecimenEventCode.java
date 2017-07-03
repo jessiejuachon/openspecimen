@@ -2,7 +2,7 @@ package com.krishagni.catissueplus.core.common.events;
 
 public enum OpenSpecimenEventCode {
 	
-	USER_SIGNUP;
+	USER_CREATED;
 	
 	public String code() {
 		return this.name();
