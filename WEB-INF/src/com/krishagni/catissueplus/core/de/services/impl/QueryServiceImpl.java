@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +66,6 @@ import com.krishagni.catissueplus.core.de.events.ListQueryAuditLogsCriteria;
 import com.krishagni.catissueplus.core.de.events.ListSavedQueriesCriteria;
 import com.krishagni.catissueplus.core.de.events.QueryAuditLogDetail;
 import com.krishagni.catissueplus.core.de.events.QueryAuditLogSummary;
-import com.krishagni.catissueplus.core.de.events.QueryAuditLogsList;
 import com.krishagni.catissueplus.core.de.events.QueryDataExportResult;
 import com.krishagni.catissueplus.core.de.events.QueryExecResult;
 import com.krishagni.catissueplus.core.de.events.QueryFolderDetails;
@@ -78,7 +76,6 @@ import com.krishagni.catissueplus.core.de.events.SavedQuerySummary;
 import com.krishagni.catissueplus.core.de.events.ShareQueryFolderOp;
 import com.krishagni.catissueplus.core.de.events.UpdateFolderQueriesOp;
 import com.krishagni.catissueplus.core.de.repository.DaoFactory;
-import com.krishagni.catissueplus.core.de.repository.QueryAuditLogDao;
 import com.krishagni.catissueplus.core.de.repository.SavedQueryDao;
 import com.krishagni.catissueplus.core.de.services.QueryService;
 import com.krishagni.catissueplus.core.de.services.SavedQueryErrorCode;
@@ -191,10 +188,7 @@ public class QueryServiceImpl implements QueryService {
 
 			Long userId = AuthUtil.getCurrentUser().getId();
 			List<SavedQuerySummary> queries = daoFactory.getSavedQueryDao().getQueries(
-							userId, 
-							crit.startAt(),
-							crit.maxResults(),
-							crit.query());
+				userId, crit.startAt(), crit.maxResults(), crit.query());
 			
 			Long count = null;
 			if (crit.countReq()) {
@@ -229,8 +223,13 @@ public class QueryServiceImpl implements QueryService {
 			SavedQueryDetail queryDetail = req.getPayload();
 			queryDetail.setId(null);
 
+			WideRowMode mode = WideRowMode.DEEP;
+			if (StringUtils.isNotBlank(queryDetail.getWideRowMode())) {
+				mode = WideRowMode.valueOf(queryDetail.getWideRowMode());
+			}
+
 			Query.createQuery()
-				.wideRowMode(WideRowMode.DEEP)
+				.wideRowMode(mode)
 				.ic(true)
 				.dateFormat(ConfigUtil.getInstance().getDeDateFmt())
 				.timeFormat(ConfigUtil.getInstance().getTimeFmt())
@@ -716,50 +715,41 @@ public class QueryServiceImpl implements QueryService {
 			return ResponseEvent.serverError(e);
 		}
 	}
-	
-    @Override
-    @PlusTransactional
-    public ResponseEvent<QueryAuditLogsList> getAuditLogs(RequestEvent<ListQueryAuditLogsCriteria> req){
-		try {			
-			Long userId = AuthUtil.getCurrentUser().getId();
-			
-			ListQueryAuditLogsCriteria crit = req.getPayload();
-			Long savedQueryId = crit.savedQueryId();
-			int startAt = crit.startAt() < 0 ? 0 : crit.startAt();
-			int maxRecs = crit.maxResults() < 0 ? 0 : crit.maxResults();
 
-			QueryAuditLogDao logDao = daoFactory.getQueryAuditLogDao();
-			List<QueryAuditLogSummary> auditLogs = null;
-			Long count = null;
-			if (savedQueryId == null || savedQueryId == -1) {
-				if (!AuthUtil.isAdmin()) {
-					return ResponseEvent.userError(SavedQueryErrorCode.OP_NOT_ALLOWED);
-				}
-				
-				switch (crit.type()) {
-					case ALL:
-						auditLogs = logDao.getAuditLogs(startAt, maxRecs);
-						if (crit.countReq()) {
-							count = logDao.getAuditLogsCount();
-						}
-						break;
-						
-					case LAST_24:
-						Calendar cal = Calendar.getInstance();
-						cal.add(Calendar.DAY_OF_MONTH, -1);
-						Date intervalSt = cal.getTime();						
-						Date intervalEnd = Calendar.getInstance().getTime();
-						auditLogs = logDao.getAuditLogs(intervalSt, intervalEnd, startAt, maxRecs);
-						if (crit.countReq()) {
-							count = logDao.getAuditLogsCount(intervalSt, intervalEnd);
-						}						
-						break;
-				}
-			} else {
-				auditLogs = logDao.getAuditLogs(savedQueryId, userId, startAt, maxRecs);
+	@Override
+	@PlusTransactional
+	public ResponseEvent<Long> getAuditLogsCount(RequestEvent<ListQueryAuditLogsCriteria> req) {
+		try {
+			ListQueryAuditLogsCriteria crit = req.getPayload();
+			if (!AuthUtil.isAdmin() && !AuthUtil.isInstituteAdmin()) {
+				crit.userId(AuthUtil.getCurrentUser().getId());
+			} else if (AuthUtil.isInstituteAdmin()) {
+				crit.instituteId(AuthUtil.getCurrentUserInstitute().getId());
 			}
-			
-			return ResponseEvent.response(QueryAuditLogsList.create(auditLogs, count));
+
+			return ResponseEvent.response(daoFactory.getQueryAuditLogDao().getLogsCount(crit));
+		} catch (OpenSpecimenException ose) {
+			return ResponseEvent.error(ose);
+		} catch (Exception e) {
+			return ResponseEvent.serverError(e);
+		}
+	}
+
+	@Override
+    @PlusTransactional
+    public ResponseEvent<List<QueryAuditLogSummary>> getAuditLogs(RequestEvent<ListQueryAuditLogsCriteria> req){
+		try {
+			ListQueryAuditLogsCriteria crit = req.getPayload();
+			if (!AuthUtil.isAdmin() && !AuthUtil.isInstituteAdmin()) {
+				crit.userId(AuthUtil.getCurrentUser().getId());
+			} else if (AuthUtil.isInstituteAdmin()) {
+				crit.instituteId(AuthUtil.getCurrentUserInstitute().getId());
+			}
+
+			List<QueryAuditLog> logs = daoFactory.getQueryAuditLogDao().getLogs(crit);
+			return ResponseEvent.response(QueryAuditLogSummary.from(logs));
+		} catch (OpenSpecimenException ose) {
+			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		}
@@ -770,8 +760,14 @@ public class QueryServiceImpl implements QueryService {
     public ResponseEvent<QueryAuditLogDetail> getAuditLog(RequestEvent<Long> req) {
 		try {
 			Long auditLogId = req.getPayload();
-			QueryAuditLog queryAuditLog = daoFactory.getQueryAuditLogDao().getAuditLog(auditLogId);
-			return ResponseEvent.response(QueryAuditLogDetail.from(queryAuditLog));
+			QueryAuditLog log = daoFactory.getQueryAuditLogDao().getById(auditLogId);
+			if (log == null) {
+				return ResponseEvent.userError(SavedQueryErrorCode.AUDIT_LOG_NOT_FOUND, auditLogId);
+			}
+
+			return ResponseEvent.response(QueryAuditLogDetail.from(log));
+		} catch (OpenSpecimenException ose) {
+			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		}
@@ -928,6 +924,7 @@ public class QueryServiceImpl implements QueryService {
 		savedQuery.setLastUpdatedBy(AuthUtil.getCurrentUser());
 		savedQuery.setLastUpdated(Calendar.getInstance().getTime());
 		savedQuery.setReporting(detail.getReporting());
+		savedQuery.setWideRowMode(detail.getWideRowMode());
 		return savedQuery;
 	}
 
@@ -1060,8 +1057,14 @@ public class QueryServiceImpl implements QueryService {
 	}
 
 	private void insertAuditLog(User user, ExecuteQueryEventOp opDetail, QueryResponse resp) {
+		SavedQuery query = null;
+		if (opDetail.getSavedQueryId() != null) {
+			query = new SavedQuery();
+			query.setId(opDetail.getSavedQueryId());
+		}
+
 		QueryAuditLog auditLog = new QueryAuditLog();
-		auditLog.setQueryId(opDetail.getSavedQueryId());
+		auditLog.setQuery(query);
 		auditLog.setRunBy(user);
 		auditLog.setTimeOfExecution(resp.getTimeOfExecution());
 		auditLog.setTimeToFinish(resp.getExecutionTime());

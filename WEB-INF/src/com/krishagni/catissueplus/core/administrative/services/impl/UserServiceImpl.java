@@ -88,6 +88,12 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 
 	private ApplicationEventPublisher publisher;
 
+	private static final String USER_SIGN_UP = "user_sign_up";
+
+	private static final String AUTH_MOD = "auth";
+
+	private static final String FORGOT_PASSWD = "forgot_password";
+
 	private DaoFactory daoFactory;
 
 	private UserFactory userFactory;
@@ -126,9 +132,19 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 	@Override
 	@PlusTransactional
 	public ResponseEvent<List<UserSummary>> getUsers(RequestEvent<UserListCriteria> req) {
-		List<User> users = daoFactory.getUserDao().getUsers(addUserListCriteria(req.getPayload()));
-		List<UserSummary> result = UserSummary.from(users);
+		UserListCriteria crit = req.getPayload();
 
+		if (StringUtils.isNotBlank(crit.type())) {
+			try {
+				User.Type.valueOf(crit.type());
+			} catch (IllegalArgumentException iae) {
+				return ResponseEvent.userError(UserErrorCode.INVALID_TYPE, crit.type());
+			}
+		}
+
+		List<User> users = daoFactory.getUserDao().getUsers(addUserListCriteria(crit));
+		List<UserSummary> result = UserSummary.from(users);
+		
 		if (req.getPayload().includeStat() && CollectionUtils.isNotEmpty(result)) {
 			Collection<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
 			Map<Long, Integer> cpCount = daoFactory.getUserDao().getCpCount(userIds);
@@ -209,9 +225,10 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 	public ResponseEvent<UserDetail> createUser(RequestEvent<UserDetail> req) {
 		try {
 			boolean isSignupReq = (AuthUtil.getCurrentUser() == null);
-			
+
 			UserDetail detail = req.getPayload();
 			if (isSignupReq) {
+				ensureSignupAllowed();
 				detail.setActivityStatus(Status.ACTIVITY_STATUS_PENDING.getStatus());
 			}
 			
@@ -252,7 +269,7 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			return ResponseEvent.serverError(e);
 		}
 	}
-	
+
 	@Override
 	@PlusTransactional
 	public ResponseEvent<UserDetail> updateUser(RequestEvent<UserDetail> req) {
@@ -427,6 +444,11 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 	@PlusTransactional
 	public ResponseEvent<Boolean> forgotPassword(RequestEvent<String> req) {
 		try {
+			boolean forgotPasswdAllowed = ConfigUtil.getInstance().getBoolSetting(AUTH_MOD, FORGOT_PASSWD, true);
+			if (!forgotPasswdAllowed) {
+				throw OpenSpecimenException.userError(UserErrorCode.FORGOT_PASSWD_DISABLED);
+			}
+
 			UserDao userDao = daoFactory.getUserDao();
 
 			User user = userDao.getUser(req.getPayload(), DEFAULT_AUTH_DOMAIN);
@@ -440,11 +462,13 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			if (oldToken != null) {
 				userDao.deleteFpToken(oldToken);
 			}
-			
+
 			ForgotPasswordToken token = new ForgotPasswordToken(user);
 			userDao.saveFpToken(token);
 			sendForgotPasswordLinkEmail(user, token.getToken());
 			return ResponseEvent.response(true);
+		} catch (OpenSpecimenException ose) {
+			return ResponseEvent.error(ose);
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		}
@@ -703,6 +727,14 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			ose.addError(UserErrorCode.DUP_LOGIN_NAME);
 		}
 	}
+
+	private void ensureSignupAllowed() {
+		boolean signUpAllowed = ConfigUtil.getInstance().getBoolSetting(ADMIN_MOD, USER_SIGN_UP, false);
+		if (!signUpAllowed) {
+			throw OpenSpecimenException.userError(UserErrorCode.SIGN_UP_NOT_ALLOWED);
+		}
+	}
+
 
 	private boolean isStatusChangeAllowed(String newStatus) {
 		return newStatus.equals(Status.ACTIVITY_STATUS_ACTIVE.getStatus()) || 

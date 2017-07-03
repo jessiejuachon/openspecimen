@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+  <changeSet author="mdnasim" id="Setting to enable or disable user sign up request">
+    <sql>
+      call add_cfg_prop(
+        'administrative', 'user_sign_up',
+        'user_sign_up', 'user_sign_up_desc',
+        'BOOLEAN', 'true'
+      );
+    </sql>
+  </changeSet>
+
+  <changeSet author="mdnasim" id="Setting to enable or disable forgot password link">
+    <sql>
+      call add_cfg_prop(
+        'auth', 'forgot_password',
+        'forgot_password', 'forgot_password_desc',
+        'BOOLEAN', 'true'
+      );
+    </sql>
+  </changeSet>
+
+  <changeSet author="mdnasim" id="Setting to configure success/error notification toast display time">
+    <sql>
+      call add_cfg_prop(
+        'common', 'toast_disp_time',
+        'toast_disp_time', 'toast_disp_time_desc',
+        'INT', '5'
+      );
+    </sql>
+  </changeSet>
+
+  <changeSet author="vpawar" id="Query: default result view">
+    <sql>
+      call add_cfg_prop(
+        'query', 'default_result_view',
+        'default_result_view', 'default_result_view_desc',
+        'FILE', 'classpath:/com/krishagni/catissueplus/core/de/query/default-result-view.json'
+      );
+    </sql>
+  </changeSet>
+</databaseChangeLog>
