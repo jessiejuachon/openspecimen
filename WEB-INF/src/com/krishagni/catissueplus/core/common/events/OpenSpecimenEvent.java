@@ -1,4 +1,4 @@
-package com.krishagni.catissueplus.core.events;
+package com.krishagni.catissueplus.core.common.events;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -8,16 +8,16 @@ import org.springframework.context.ApplicationEvent;
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 
-public class Event extends ApplicationEvent {
+public class OpenSpecimenEvent extends ApplicationEvent {
 	private String eventName;
 	
 	private Object source;
 	
-	User user;
+	private User user;
 	
-	Date time;
+	private Date time;
 	
-	public Event(Object source, String eventName) {
+	public OpenSpecimenEvent(Object source, String eventName) {
 		super(source);
 		this.source = source;
 		this.eventName = eventName;

@@ -244,5 +244,4 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 		String[] rcpts = {user.getEmailAddress()};
 		EmailUtil.getInstance().sendEmail(ACCOUNT_LOCKED_NOTIF_TMPL, rcpts, null, emailProps);
 	}
-	
 }

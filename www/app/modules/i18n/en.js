@@ -990,7 +990,6 @@
     "sign_in_failed": "The username or password you entered is incorrect",
     "sign_in": "Sign In",
     "logout":"Log Out",
-    "resend_otp": "Resend otp?",
     "forgot_password": "Forgot password?",
     "approve_user": "Approve User",
     "approve_users": "Approve",
@@ -1095,15 +1094,7 @@
     "proceed_sign_up": "Proceed to Sign Up",
     "welcome_title": "OpenSpecimen Introduction in One Minute"
   },
-
-    "resend_otp": {
-    "title": "Resend OTP",
-    "email_totp_qr_code": "Email OTP QR code",
-    "return_to_signin": "Return to sign in page",
-    "reset_email_sent": "An email containing image of otp QR code has been sent to your email id. Please use it login.",
-    "invalid_email_address": "We couldn't find a user associated with {{emailAddress}}"
-  },
-
+  
   "forgot_password": {
     "title": "Forgot Password",
     "email_reset_password_link": "Email Reset Password Link",

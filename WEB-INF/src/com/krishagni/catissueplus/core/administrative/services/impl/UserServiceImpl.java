@@ -47,6 +47,8 @@ import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.BulkEntityDetail;
 import com.krishagni.catissueplus.core.common.events.DeleteEntityOp;
 import com.krishagni.catissueplus.core.common.events.DependentEntityDetail;
+import com.krishagni.catissueplus.core.common.events.OpenSpecimenEvent;
+import com.krishagni.catissueplus.core.common.events.OpenSpecimenEventCode;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 import com.krishagni.catissueplus.core.common.events.UserSummary;
@@ -56,8 +58,6 @@ import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
-import com.krishagni.catissueplus.core.events.Event;
-import com.krishagni.catissueplus.core.events.eventcodes.OpenSpecimenEventCode;
 import com.krishagni.catissueplus.core.exporter.domain.ExportJob;
 import com.krishagni.catissueplus.core.exporter.services.ExportService;
 import com.krishagni.rbac.events.SubjectRoleDetail;
@@ -259,7 +259,7 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			}
 			
 			//SignUp event is published
-			Event signUpEvent = new Event(detail,OpenSpecimenEventCode.USER_SIGNUP.code());
+			OpenSpecimenEvent signUpEvent = new OpenSpecimenEvent(detail,OpenSpecimenEventCode.USER_SIGNUP.code());
 			publisher.publishEvent(signUpEvent);
 			
 			return ResponseEvent.response(UserDetail.from(user));
@@ -885,7 +885,4 @@ public class UserServiceImpl implements UserService, InitializingBean, Applicati
 			}
 		};
 	}
-
-
-
 }

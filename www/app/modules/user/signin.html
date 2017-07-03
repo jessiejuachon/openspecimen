@@ -11,7 +11,6 @@
       <div class="os-group-controls">
         <input type="text"     class="form-control" ng-model="loginData.loginName" placeholder="{{'user.login_name' | translate}}">
         <input type="password" class="form-control" ng-model="loginData.password"  placeholder="{{'user.password' | translate}}">
-        <input type="number" class="form-control" ng-model="loginData.otp"  placeholder="OTP if applicable">
         <div ng-if="domains.length > 1">
           <os-select ng-model="loginData.domainName" list="domains" name="domain"
             ng-click="$event.stopPropagation()" placeholder="{{'user.domain_name' | translate}}" required>
@@ -22,7 +21,6 @@
       <button type="submit" class="btn btn-block btn-primary" translate="user.sign_in">Sign in</button>
       <div style="padding-top: 5px;" ng-if="!!global.appProps.forgot_password">
         <a ui-sref="forgot-password" translate="user.forgot_password">Forgot password?</a>
-        <a ui-sref="resend-otp" translate="user.resend_otp">Resend otp?</a>
       </div>
     </form>
   </div>

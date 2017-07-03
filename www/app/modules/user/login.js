@@ -107,10 +107,6 @@ angular.module('openspecimen')
     };
 
     $scope.login = function() {
-      //i will remove it later
-      var props = { "otp" : $scope.loginData.otp };
-      delete $scope.loginData.otp;
-      $scope.loginData["props"] = props;
       AuthService.authenticate($scope.loginData).then(onLogin);
     }
 
