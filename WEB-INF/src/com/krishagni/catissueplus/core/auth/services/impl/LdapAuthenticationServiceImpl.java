@@ -27,12 +27,12 @@ public class LdapAuthenticationServiceImpl implements AuthenticationService {
 	}
 	
 	@Override
-	public void authenticate(LoginDetail authLoginDetail) {
+	public void authenticate(LoginDetail loginDetail) {
 		try {
 			UsernamePasswordAuthenticationToken authenticationToken =
 				new UsernamePasswordAuthenticationToken(
-						authLoginDetail.getLoginName(), 
-						authLoginDetail.getPassword());
+						loginDetail.getLoginName(), 
+						loginDetail.getPassword());
 		
 			provider.authenticate(authenticationToken);
 		} catch (AuthenticationException e) {

@@ -25,12 +25,12 @@ public class OpenSpecimenAuthServiceImpl implements AuthenticationService {
 	}
 
 	@Override
-	public void authenticate(LoginDetail authLoginDetail) {
+	public void authenticate(LoginDetail loginDetail) {
 		try{
 			UsernamePasswordAuthenticationToken authenticationToken =
 					new UsernamePasswordAuthenticationToken(
-							authLoginDetail.getLoginName(), 
-							authLoginDetail.getPassword());
+							loginDetail.getLoginName(), 
+							loginDetail.getPassword());
 		
 			authManager.authenticate(authenticationToken);
 		} catch(AuthenticationException e) {

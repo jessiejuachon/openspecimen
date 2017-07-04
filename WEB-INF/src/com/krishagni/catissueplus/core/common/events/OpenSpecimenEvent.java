@@ -8,16 +8,16 @@ import org.springframework.context.ApplicationEvent;
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 
-public class OpenSpecimenEvent extends ApplicationEvent {
-	private String eventName;
+public class OpenSpecimenEvent<T> extends ApplicationEvent {
+	private EventCode eventName;
 	
-	private Object source;
+	private T source;
 	
 	private User user;
 	
 	private Date time;
 	
-	public OpenSpecimenEvent(Object source, String eventName) {
+	public OpenSpecimenEvent(T source, EventCode eventName) {
 		super(source);
 		this.source = source;
 		this.eventName = eventName;
@@ -29,7 +29,7 @@ public class OpenSpecimenEvent extends ApplicationEvent {
 		return source;
 	}
 
-	public void setSource(Object object) {
+	public void setSource(T object) {
 		this.source = object;
 	}
 
@@ -46,10 +46,10 @@ public class OpenSpecimenEvent extends ApplicationEvent {
 	}
 
 	public String getEventName() {
-		return eventName;
+		return eventName.code();
 	}
 
-	public void setEventName(String eventName) {
+	public void setEventName(EventCode eventName) {
 		this.eventName = eventName;
 	}
 

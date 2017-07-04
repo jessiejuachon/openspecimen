@@ -1,10 +1,11 @@
 package com.krishagni.catissueplus.core.common.events;
 
-public enum OpenSpecimenEventCode {
+public enum OpenSpecimenEventCode implements EventCode {
 	
 	USER_CREATED;
-	
+
+	@Override
 	public String code() {
-		return this.name();
+		return name();
 	}
 }
