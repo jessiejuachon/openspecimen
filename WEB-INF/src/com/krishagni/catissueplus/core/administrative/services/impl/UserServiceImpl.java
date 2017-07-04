@@ -245,10 +245,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 			if (isSignupReq) {
 				sendUserSignupEmail(user);
 				sendNewUserRequestEmail(user);
-			} else {
-				ForgotPasswordToken token = generateForgotPwdToken(user);
-				sendUserCreatedEmail(user, token);
-				
+			} else {				
 				notifyUserCreated(user);
 			}
 
@@ -809,10 +806,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	}
 
 	private void onAccountActivation(User user, String prevStatus) {
-		if (prevStatus.equals(Status.ACTIVITY_STATUS_PENDING.getStatus())) {
-			ForgotPasswordToken token = generateForgotPwdToken(user);
-			sendUserCreatedEmail(user, token);
-			
+		if (prevStatus.equals(Status.ACTIVITY_STATUS_PENDING.getStatus())) {			
 			notifyUserCreated(user);
 		} else if (prevStatus.equals(Status.ACTIVITY_STATUS_LOCKED.getStatus())) {
 			addAutoLogin(user);
@@ -879,6 +873,8 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	}
 	
 	private void notifyUserCreated(User user) {
+		ForgotPasswordToken token = generateForgotPwdToken(user);
+		sendUserCreatedEmail(user, token);
 		OpenSpecimenEvent<User> userCreatedEvent = new OpenSpecimenEvent<User>(user, OpenSpecimenEventCode.USER_CREATED);
 		EventPublisher.getInstance().publish(userCreatedEvent);
 	}
