@@ -85,5 +85,14 @@
     <addForeignKeyConstraint constraintName="FK_NOTIF_USERS_NOTIF_ID"
       baseTableName="OS_USER_NOTIFICATIONS" baseColumnNames="NOTIFICATION_ID"
       referencedTableName="OS_NOTIFICATIONS" referencedColumnNames="IDENTIFIER"/>
-  </changeSet>	
+  </changeSet>
+
+  <changeSet author="ckhilosiya" id="Maintain status of API calls for container store list">
+    <addColumn tableName="OS_CONTAINER_STORE_LISTS">
+      <column name="STATUS" type="${text.type}(16)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="STATE" type="${tinyint.type}"/>
+    </addColumn>
+  </changeSet>
 </databaseChangeLog>
