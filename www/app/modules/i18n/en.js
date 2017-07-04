@@ -1575,6 +1575,20 @@
       "type_id_or_title": "Enter query ID or title to search queries"
     },
 
+    "audit_logs": {
+      "view_logs": "View Audit Logs",
+      "title": "Query Audit Logs",
+      "query": "Query",
+      "executed_by": "Executed By",
+      "type": "Type",
+      "time_of_exec": "Time of Execution",
+      "time_to_finish": "Time to Finish (seconds)",
+      "loading": "Loading audit logs. Please wait for a moment ...",
+      "no_logs": "No audit logs to show",
+      "unsaved_query": "Unsaved Query",
+      "filter": "Audit Logs Filter"
+    },
+
     "catalogs": "Catalogs",
     "search_cp": "Search Collection Protocol",
     "no_catalog": "No catalog configured for {{shortTitle}}",
@@ -1961,6 +1975,13 @@
       "extra_count": "Failed: Additional specimens present in the shipment",
       "extra_error": "Failed: Additional specimen present in the shipment"
     }
+  },
+
+  "notifs": {
+    "title": "Notifications",
+    "loading": "Loading notifications. Please wait for a moment... ",
+    "no_notifs": "No notifications to show",
+    "view_all": "View All Notifications"
   },
 
    "jobs": {
