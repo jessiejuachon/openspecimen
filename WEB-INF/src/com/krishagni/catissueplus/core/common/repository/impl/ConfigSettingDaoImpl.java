@@ -15,20 +15,20 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettings(String accessLevel, Long objectId) {
+	public List<ConfigSetting> getAllSettings(Long objectId, String accessLevel) {
 		return getCurrentSession().getNamedQuery(GET_ALL)
-			.setString("accessLevel", accessLevel)
 			.setParameter("objectId", objectId)
+			.setString("accessLevel", accessLevel)
 			.list();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<ConfigSetting> getAllSettingsByModule(String moduleName, String accessLevel, Long objectId) {
+	public List<ConfigSetting> getAllSettingsByModule(Long objectId, String accessLevel, String moduleName) {
 		return getCurrentSession().getNamedQuery(GET_ALL_BY_MODULE)
-			.setString("name", moduleName)
-			.setString("accessLevel", accessLevel)
 			.setParameter("objectId", objectId)
+			.setString("accessLevel", accessLevel)
+			.setString("name", moduleName)
 			.list();
 	}
 
@@ -41,12 +41,12 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	}
 
 	@Override
-	public ConfigSetting getSettingByModAndProp(Long objectId, String moduleName, String propName, String accessLevel) {
+	public ConfigSetting getSettingByModAndProp(Long objectId, String accessLevel, String propName, String moduleName) {
 		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_SETTING_BY_MODULE_PROP)
 			.setParameter("objectId", objectId)
+			.setString("accessLevel", accessLevel)
 			.setString("propName", propName)
 			.setString("moduleName", moduleName)
-			.setString("accessLevel", accessLevel)
 			.uniqueResult();
 	}
 

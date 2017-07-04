@@ -9,7 +9,7 @@
     <sql>
       insert into os_cfg_prop_access_level(PROPERTY_ID, ACCESS_LEVEL)
         select
-          cp.identifier,'System'
+          cp.identifier, 'System'
         from
           os_cfg_props cp;
     </sql>

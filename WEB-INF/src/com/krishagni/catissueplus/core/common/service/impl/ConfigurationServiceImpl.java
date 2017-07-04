@@ -86,7 +86,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 				settings.addAll(moduleSettings.values());
 			}
 
-			userSettings = daoFactory.getConfigSettingDao().getAllSettings("User", user.getId());
+			userSettings = daoFactory.getConfigSettingDao().getAllSettings(ConfigProperty.AccessLevel.User.name(), user.getId());
 			settings.addAll(userSettings);
 		} else {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);

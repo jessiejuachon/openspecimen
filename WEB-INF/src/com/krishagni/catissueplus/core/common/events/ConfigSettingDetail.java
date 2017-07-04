@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
-import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.DataType;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
@@ -166,3 +165,4 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		return result;
 	}
 }
+

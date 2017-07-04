@@ -37,7 +37,6 @@ public class ConfigurationController {
 	@Autowired
 	private ConfigurationService cfgSvc;
 	
-
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody	
