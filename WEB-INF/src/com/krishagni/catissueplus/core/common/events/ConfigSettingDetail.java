@@ -165,4 +165,3 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		return result;
 	}
 }
-

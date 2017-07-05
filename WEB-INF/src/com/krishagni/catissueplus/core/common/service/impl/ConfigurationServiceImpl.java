@@ -85,15 +85,15 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
 				settings.addAll(moduleSettings.values());
 			}
-
-			userSettings = daoFactory.getConfigSettingDao().getAllSettings(ConfigProperty.AccessLevel.User.name(), user.getId());
+		
+			userSettings = daoFactory.getConfigSettingDao().getAllSettings(user.getId(), ConfigProperty.AccessLevel.User.name());
 			settings.addAll(userSettings);
 		} else {
 			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
 			if (moduleSettings != null) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, ConfigProperty.AccessLevel.User.name(), user.getId());
+			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(user.getId(), ConfigProperty.AccessLevel.User.name(), module);
 			settings.addAll(userSettings);
 		}
 		
@@ -113,7 +113,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			}
 
 			ConfigSetting systemSetting = moduleSettings.get(payload.second());
-			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp(user.getId(), payload.first(), payload.second(), ConfigProperty.AccessLevel.User.name());
+			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp(user.getId(), ConfigProperty.AccessLevel.User.name(), payload.first(), payload.second());
 			if (userSetting == null) {
 				setting = systemSetting;
 			} else {
@@ -375,7 +375,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	public void reload() {
 		Map<String, Map<String, ConfigSetting>> settingsMap = new ConcurrentHashMap<>();
 		
-		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings(ConfigProperty.AccessLevel.System.name(), null);
+		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings(null, ConfigProperty.AccessLevel.System.name());
 		for (ConfigSetting setting : settings) {
 			ConfigProperty prop = setting.getProperty();
 			Hibernate.initialize(prop.getAllowedValues()); // pre-init
