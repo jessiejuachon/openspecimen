@@ -85,7 +85,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
 				settings.addAll(moduleSettings.values());
 			}
-		
+
 			userSettings = daoFactory.getConfigSettingDao().getAllSettings(user.getId(), ConfigProperty.AccessLevel.User.name());
 			settings.addAll(userSettings);
 		} else {
@@ -93,7 +93,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			if (moduleSettings != null) {
 				settings.addAll(moduleSettings.values());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule(user.getId(), ConfigProperty.AccessLevel.User.name(), module);
+			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule
+						(user.getId(), ConfigProperty.AccessLevel.User.name(), module);
 			settings.addAll(userSettings);
 		}
 		
@@ -113,7 +114,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			}
 
 			ConfigSetting systemSetting = moduleSettings.get(payload.second());
-			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp(user.getId(), ConfigProperty.AccessLevel.User.name(), payload.first(), payload.second());
+			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp
+						(user.getId(), ConfigProperty.AccessLevel.User.name(), payload.second(), payload.first());
 			if (userSetting == null) {
 				setting = systemSetting;
 			} else {
