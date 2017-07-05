@@ -31,6 +31,7 @@ import com.krishagni.catissueplus.core.administrative.events.AnnouncementDetail;
 import com.krishagni.catissueplus.core.administrative.events.InstituteDetail;
 import com.krishagni.catissueplus.core.administrative.events.PasswordDetails;
 import com.krishagni.catissueplus.core.administrative.events.UserDetail;
+import com.krishagni.catissueplus.core.administrative.events.UserEvent;
 import com.krishagni.catissueplus.core.administrative.repository.UserDao;
 import com.krishagni.catissueplus.core.administrative.repository.UserListCriteria;
 import com.krishagni.catissueplus.core.administrative.services.UserService;
@@ -45,13 +46,12 @@ import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.BulkEntityDetail;
 import com.krishagni.catissueplus.core.common.events.DeleteEntityOp;
 import com.krishagni.catissueplus.core.common.events.DependentEntityDetail;
-import com.krishagni.catissueplus.core.common.events.EventPublisher;
 import com.krishagni.catissueplus.core.common.events.OpenSpecimenEvent;
-import com.krishagni.catissueplus.core.common.events.UserEvent;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 import com.krishagni.catissueplus.core.common.events.UserSummary;
 import com.krishagni.catissueplus.core.common.service.EmailService;
+import com.krishagni.catissueplus.core.common.service.impl.EventPublisher;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
@@ -875,7 +875,6 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	private void notifyUserCreated(User user) {
 		ForgotPasswordToken token = generateForgotPwdToken(user);
 		sendUserCreatedEmail(user, token);
-		OpenSpecimenEvent<User> userCreatedEvent = new OpenSpecimenEvent<User>(user, UserEvent.CREATED);
-		EventPublisher.getInstance().publish(userCreatedEvent);
+		EventPublisher.getInstance().publish(user, UserEvent.CREATED);
 	}
 }

@@ -49,7 +49,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 	public void setAuditService(AuditService auditService) {
 		this.auditService = auditService;
 	}
-	
+
 	@Override
 	@PlusTransactional
 	public ResponseEvent<Map<String, Object>> authenticateUser(RequestEvent<LoginDetail> req) {

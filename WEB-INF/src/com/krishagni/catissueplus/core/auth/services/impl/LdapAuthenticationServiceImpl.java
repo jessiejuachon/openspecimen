@@ -30,9 +30,7 @@ public class LdapAuthenticationServiceImpl implements AuthenticationService {
 	public void authenticate(LoginDetail loginDetail) {
 		try {
 			UsernamePasswordAuthenticationToken authenticationToken =
-				new UsernamePasswordAuthenticationToken(
-						loginDetail.getLoginName(), 
-						loginDetail.getPassword());
+				new UsernamePasswordAuthenticationToken(loginDetail.getLoginName(), loginDetail.getPassword());
 		
 			provider.authenticate(authenticationToken);
 		} catch (AuthenticationException e) {

@@ -1,8 +1,11 @@
-package com.krishagni.catissueplus.core.common.events;
+package com.krishagni.catissueplus.core.common.service.impl;
 
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+
+import com.krishagni.catissueplus.core.common.events.EventCode;
+import com.krishagni.catissueplus.core.common.events.OpenSpecimenEvent;
 
 @Configurable
 public class EventPublisher implements ApplicationEventPublisherAware {
@@ -20,7 +23,7 @@ public class EventPublisher implements ApplicationEventPublisherAware {
 		return instance;
 	}
 	
-	public <T> void publish(OpenSpecimenEvent<T> event) {
-		publisher.publishEvent(event);
+	public <T> void publish(T source, EventCode eventCode) {
+		publisher.publishEvent(new OpenSpecimenEvent<>(source, eventCode));
 	}
 }
