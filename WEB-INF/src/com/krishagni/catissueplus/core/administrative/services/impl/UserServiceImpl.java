@@ -47,7 +47,7 @@ import com.krishagni.catissueplus.core.common.events.DeleteEntityOp;
 import com.krishagni.catissueplus.core.common.events.DependentEntityDetail;
 import com.krishagni.catissueplus.core.common.events.EventPublisher;
 import com.krishagni.catissueplus.core.common.events.OpenSpecimenEvent;
-import com.krishagni.catissueplus.core.common.events.OpenSpecimenEventCode;
+import com.krishagni.catissueplus.core.common.events.UserEvent;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 import com.krishagni.catissueplus.core.common.events.UserSummary;
@@ -875,7 +875,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	private void notifyUserCreated(User user) {
 		ForgotPasswordToken token = generateForgotPwdToken(user);
 		sendUserCreatedEmail(user, token);
-		OpenSpecimenEvent<User> userCreatedEvent = new OpenSpecimenEvent<User>(user, OpenSpecimenEventCode.USER_CREATED);
+		OpenSpecimenEvent<User> userCreatedEvent = new OpenSpecimenEvent<User>(user, UserEvent.CREATED);
 		EventPublisher.getInstance().publish(userCreatedEvent);
 	}
 }
