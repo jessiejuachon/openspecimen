@@ -28,7 +28,7 @@
 
     <property name="status" column="STATUS">
       <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.administrative.domain.ContainerStoreList$STATUS</param>
+        <param name="enumClass">com.krishagni.catissueplus.core.administrative.domain.ContainerStoreList$Status</param>
         <param name="type">12</param>
       </type>
     </property>

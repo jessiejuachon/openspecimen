@@ -13,7 +13,7 @@ public class ContainerStoreList extends BaseEntity {
 		PICK
 	}
 
-	public enum STATUS {
+	public enum Status {
 		PENDING,
 		FAILED,
 		SUCCESS
@@ -29,7 +29,7 @@ public class ContainerStoreList extends BaseEntity {
 
 	private Date executionTime;
 
-	private STATUS status = STATUS.PENDING;
+	private Status status = Status.PENDING;
 
 	private Short state;
 
@@ -75,11 +75,11 @@ public class ContainerStoreList extends BaseEntity {
 		this.executionTime = executionTime;
 	}
 
-	public STATUS getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 
-	public void setStatus(STATUS status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 
