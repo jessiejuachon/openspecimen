@@ -13,12 +13,12 @@ public class ConfigProperty extends BaseEntity {
 		BOOLEAN,
 		CHAR,
 		FILE
-	};
+	}
 	
-	public enum AccessLevel {
-		System,
-		User
-	};
+	public enum Level {
+		USER,
+		SYSTEM
+	}
 
 	private Module module;
 	
@@ -32,9 +32,11 @@ public class ConfigProperty extends BaseEntity {
 	
 	private DataType dataType;
 	
-	private Set<AccessLevel> accessLevels = new HashSet<>();
+	private Set<Level> levels = new HashSet<>();
 
 	private boolean secured;
+
+	private Set<ConfigSetting> settings = new HashSet<>();
 
 	public Module getModule() {
 		return module;
@@ -84,12 +86,12 @@ public class ConfigProperty extends BaseEntity {
 		this.dataType = dataType;
 	}
 
-	public Set<AccessLevel> getAccessLevels() {
-		return accessLevels;
+	public Set<Level> getLevels() {
+		return levels;
 	}
 
-	public void setAccessLevels(Set<AccessLevel> accessLevels) {
-		this.accessLevels = accessLevels;
+	public void setLevels(Set<Level> levels) {
+		this.levels = levels;
 	}
 
 	public boolean isSecured() {
@@ -98,6 +100,14 @@ public class ConfigProperty extends BaseEntity {
 
 	public void setSecured(boolean secured) {
 		this.secured = secured;
+	}
+
+	public Set<ConfigSetting> getSettings() {
+		return settings;
+	}
+
+	public void setSettings(Set<ConfigSetting> settings) {
+		this.settings = settings;
 	}
 
 	public boolean isFile() {

@@ -21,38 +21,32 @@
 
     <property name="activityStatus" column="ACTIVITY_STATUS" not-null="true"/>
 
-    <property name="accessLevel" column="ACCESS_LEVEL">
+    <property name="level" column="LEVEL">
       <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.ConfigProperty$AccessLevel</param>
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.ConfigProperty$Level</param>
         <param name="type">12</param>
       </type>
     </property>
 
-    <property name="objId" column="OBJECT_ID"/>
+    <property name="objectId" column="OBJECT_ID"/>
 
     <query name="getAll">
       select
-        cs
+        cprop, cs
       from
-        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
+        com.krishagni.catissueplus.core.common.domain.ConfigProperty cprop
+        inner join cprop.module cm
+        left join cprop.settings cs
       where
-        (cs.objId = :objectId or cs.objId IS NULL) and
-        cs.accessLevel = :accessLevel and
-        cs.activityStatus = 'Active'
-    </query>
-
-    <query name="getAllByModule">
-      select
-        cs
-      from
-        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
-        join cs.property prop 
-        join prop.module module
-      where
-        (cs.objId = :objectId or cs.objId IS NULL) and
-        cs.accessLevel = :accessLevel and
-        module.name = :name and
-        cs.activityStatus = 'Active'
+        :level in cprop.levels and
+        (:moduleName is null or cm.name = :moduleName) and
+        (
+          cs.id is null or
+          (
+            ((:objectId is null and cs.objectId is null) or cs.objectId = :objectId) and
+            cs.activityStatus = 'Active'
+          )
+        )
     </query>
 
     <query name="getAllLaterThan">
@@ -73,12 +67,11 @@
         join cs.property prop
         join prop.module module
       where
-        (cs.objId = :objectId or cs.objId IS NULL) and
-        cs.accessLevel = :accessLevel and
-        prop.name = :propName and
         module.name = :moduleName and
+        prop.name = :propName and
+        cs.level = :level and
+        ((:objectId is null and cs.objectId is null) or cs.objectId = :objectId)
         cs.activityStatus = 'Active'
     </query>
-
   </class>
 </hibernate-mapping>

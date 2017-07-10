@@ -44,6 +44,9 @@ public class ConfigurationController {
 		@RequestParam(value = "module", required = false)
 		String moduleName,
 
+		@RequestParam(value = "level", required = false)
+		String level, /** Used only in case of all properties of all modules or requested module **/
+
 		@RequestParam(value = "property", required = false)
 		String propertyName) {
 
@@ -51,7 +54,7 @@ public class ConfigurationController {
 			ConfigSettingDetail setting = response(cfgSvc.getSetting(request(Pair.make(moduleName, propertyName))));
 			return Collections.singletonList(setting);
 		} else {
-			return response(cfgSvc.getSettings(request(moduleName)));
+			return response(cfgSvc.getSettings(request(Pair.make(moduleName, level))));
 		}
 	}
 

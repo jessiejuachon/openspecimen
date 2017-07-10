@@ -2,15 +2,18 @@ package com.krishagni.catissueplus.core.common.repository;
 
 import java.util.List;
 
+import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 
 public interface ConfigSettingDao extends Dao<ConfigSetting> {
+
+	List<ConfigProperty> getAllProperties();
+
+	List<ConfigSetting> getAllSettings(String level, Long objectId);
 	
-	List<ConfigSetting> getAllSettings(Long objectId, String accessLevel);
-	
-	List<ConfigSetting> getAllSettingsByModule(Long objectId, String accessLevel, String moduleName);
+	List<ConfigSetting> getAllSettingsByModule(String moduleName, String level, Long objectId);
 
 	List<ConfigSetting> getSettingsLaterThan(Long settingId);
 
-	ConfigSetting getSettingByModAndProp(Long objectId, String accessLevel, String propName, String moduleName);
+	ConfigSetting getSettingByModuleAndProperty(String moduleName, String propName, String level, Long objectId);
 }

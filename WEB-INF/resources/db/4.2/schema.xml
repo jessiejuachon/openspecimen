@@ -127,30 +127,39 @@
     </sql>
   </changeSet>
 
-  <changeSet author="mghodekar" id="Configuration Property Access Level">
-    <createTable tableName="OS_CFG_PROP_ACCESS_LEVEL">
+  <changeSet author="mghodekar" id="Configuration property levels">
+    <createTable tableName="OS_CFG_PROP_LEVELS">
       <column name="PROPERTY_ID" type="${int.type}">
         <constraints nullable="false"/>
       </column>
-      <column name="ACCESS_LEVEL" type="${text.type}(16)" defaultValue="System">
+      <column name="LEVEL" type="${text.type}(16)" defaultValue="SYSTEM">
         <constraints nullable="false"/>
       </column>
     </createTable>
   </changeSet>
 
-  <changeSet author="mghodekar" id="FK on property id of config property access level">
-    <addForeignKeyConstraint constraintName="FK_CFG_PROP_ACCESS_LEVEL_PROP"
-      baseTableName="OS_CFG_PROP_ACCESS_LEVEL" baseColumnNames="PROPERTY_ID"
-      referencedTableName="OS_CFG_PROPS" referencedColumnNames="IDENTIFIER"/>
+  <changeSet author="mghodekar" id="FK on property of config property levels">
+    <addForeignKeyConstraint constraintName="FK_CFG_PROP_LEVELS_PROP"
+      referencedTableName="OS_CFG_PROPS" referencedColumnNames="IDENTIFIER"
+      baseTableName="OS_CFG_PROP_LEVELS" baseColumnNames="PROPERTY_ID"/>
   </changeSet>
 
-  <changeSet author="mghodekar" id="Access level and Object id column for Configuration setting">
+  <changeSet author="mghodekar" id="Level and object ID of configuration setting">
     <addColumn tableName="OS_CFG_SETTINGS">
-      <column name="ACCESS_LEVEL" type="${text.type}(16)" defaultValue="System">
+      <column name="LEVEL" type="${text.type}(16)" defaultValue="SYSTEM">
         <constraints nullable="false"/>
       </column>
-      <column name="OBJECT_ID" type="${int.type}">
-      </column>
+      <column name="OBJECT_ID" type="${int.type}"/>
     </addColumn>
+  </changeSet>
+
+  <changeSet author="mghodekar" id="Ensure all present settings are associated at system level">
+    <sql>
+      insert into os_cfg_prop_levels(property_id, level)
+        select
+          cfg_prop.identifier, 'SYSTEM'
+        from
+          os_cfg_props cfg_prop;
+    </sql>
   </changeSet>
 </databaseChangeLog>

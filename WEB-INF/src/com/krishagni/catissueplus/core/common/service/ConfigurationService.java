@@ -12,7 +12,7 @@ import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 
 public interface ConfigurationService {
 	
-	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req);
+	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<Pair<String, String>> req);
 
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req);
 	

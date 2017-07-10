@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
-import com.krishagni.catissueplus.core.common.domain.ConfigProperty.AccessLevel;
+import com.krishagni.catissueplus.core.common.domain.ConfigProperty.Level;
 
 public class ConfigSetting extends BaseEntity {
 	private ConfigProperty property;
@@ -17,9 +17,9 @@ public class ConfigSetting extends BaseEntity {
 
 	private String activityStatus;
 
-	private AccessLevel accessLevel;
+	private Level level;
 
-	private Long objId;
+	private Long objectId;
 
 	public ConfigProperty getProperty() {
 		return property;
@@ -61,19 +61,19 @@ public class ConfigSetting extends BaseEntity {
 		this.activityStatus = activityStatus;
 	}
 
-	public AccessLevel getaccessLevel() {
-		return accessLevel;
+	public Level getLevel() {
+		return level;
 	}
 
-	public void setaccessLevel(AccessLevel accessLevel) {
-		this.accessLevel = accessLevel;
+	public void setLevel(Level level) {
+		this.level = level;
 	}
 
-	public Long getObjId() {
-		return objId;
+	public Long getObjectId() {
+		return objectId;
 	}
 
-	public void setObjId(Long objId) {
-		this.objId = objId;
+	public void setObjectId(Long objectId) {
+		this.objectId = objectId;
 	}
 }

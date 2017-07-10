@@ -14,10 +14,7 @@
       </generator>
     </id>
 
-    <many-to-one
-      name="module"
-      class="com.krishagni.catissueplus.core.common.domain.Module"
-      column="MODULE_ID"/>
+    <many-to-one name="module" column="MODULE_ID"/>
 
     <property name="name" column="NAME" unique="true"/>
 
@@ -32,16 +29,28 @@
       </type>
     </property>
 
-    <set name="accessLevels" table="OS_CFG_PROP_ACCESS_LEVEL">
+    <set name="levels" table="OS_CFG_PROP_LEVELS" cascade="all-delete-orphan" fetch="join">
       <key column="PROPERTY_ID"/>
-      <element column="ACCESS_LEVEL" type="string"/>
+      <element column="LEVEL" type="string"/>
     </set>
 
-    <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan">
+    <set name="allowedValues" table="OS_CFG_PROP_ALLOWED_VALUES" cascade="all-delete-orphan" fetch="join">
       <key column="PROPERTY_ID"/>
       <element column="VALUE" type="string"/>
     </set>
     
     <property name="secured" column="IS_SECURE"/>
+
+    <set name="settings" table="OS_CFG_SETTINGS">
+      <key column="PROPERTY_ID"/>
+      <one-to-many class="com.krishagni.catissueplus.core.common.domain.ConfigSetting"/>
+    </set>
+
+    <query name="getAll">
+      select
+        p
+      from
+        com.krishagni.catissueplus.core.common.domain.ConfigProperty p
+    </query>
   </class>
 </hibernate-mapping>

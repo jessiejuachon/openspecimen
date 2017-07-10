@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -17,6 +16,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -52,8 +52,10 @@ import com.krishagni.catissueplus.core.common.util.Utility;
 public class ConfigurationServiceImpl implements ConfigurationService, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
 	
 	private Map<String, List<ConfigChangeListener>> changeListeners = new ConcurrentHashMap<>();
-	
-	private Map<String, Map<String, ConfigSetting>> configSettings;
+
+	private Map<String, ConfigProperty> configProps;
+
+	private Map<String, Map<String, ConfigSetting>> systemSettings;
 
 	private DaoFactory daoFactory;
 	
@@ -75,27 +77,38 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	@Override
 	@PlusTransactional
-	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<String> req) {
-		String module = req.getPayload();
+	public ResponseEvent<List<ConfigSettingDetail>> getSettings(RequestEvent<Pair<String, String>> req) {
+		Pair<String, String> input = req.getPayload();
+		String module = input.first();
+		String level  = input.second();
 
-		User user = AuthUtil.getCurrentUser();
-		List<ConfigSetting> settings = new ArrayList<ConfigSetting>();
-		List<ConfigSetting> userSettings = new ArrayList<>();
+		ConfigProperty.Level propLevel = ConfigProperty.Level.SYSTEM;
+		if (StringUtils.isNotBlank(level)) {
+			try {
+				propLevel = ConfigProperty.Level.valueOf(level);
+			} catch (Exception e) {
+				// TODO: raise an appropriate error code
+			}
+		}
+
+		List<ConfigSetting> settings = new ArrayList<>();
 		if (StringUtils.isBlank(module)) {
-			for (Map<String, ConfigSetting> moduleSettings : configSettings.values()) {
-				settings.addAll(moduleSettings.values());
+			if (propLevel == ConfigProperty.Level.SYSTEM) {
+				for (Map<String, ConfigSetting> moduleSettings : systemSettings.values()) {
+					settings.addAll(moduleSettings.values());
+				}
+			} else {
+				settings = daoFactory.getConfigSettingDao().getAllSettings(level, AuthUtil.getCurrentUser().getId());
 			}
-
-			userSettings = daoFactory.getConfigSettingDao().getAllSettings(user.getId(), ConfigProperty.AccessLevel.User.name());
-			settings.addAll(userSettings);
 		} else {
-			Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
-			if (moduleSettings != null) {
-				settings.addAll(moduleSettings.values());
+			if (propLevel == ConfigProperty.Level.SYSTEM) {
+				Map<String, ConfigSetting> moduleSettings = systemSettings.get(module);
+				if (moduleSettings != null) {
+					settings.addAll(moduleSettings.values());
+				}
+			} else {
+				settings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, level, AuthUtil.getCurrentUser().getId());
 			}
-			userSettings = daoFactory.getConfigSettingDao().getAllSettingsByModule
-						(user.getId(), ConfigProperty.AccessLevel.User.name(), module);
-			settings.addAll(userSettings);
 		}
 		
 		return ResponseEvent.response(ConfigSettingDetail.from(settings));
@@ -104,29 +117,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> getSetting(RequestEvent<Pair<String, String>> req) {
-		Pair<String, String> payload = req.getPayload();
-		ConfigSetting setting;
 		try {
-			User user = AuthUtil.getCurrentUser();
-			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
-			if (moduleSettings == null) {
-				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-			}
-
-			ConfigSetting systemSetting = moduleSettings.get(payload.second());
-			ConfigSetting userSetting = daoFactory.getConfigSettingDao().getSettingByModAndProp
-						(user.getId(), ConfigProperty.AccessLevel.User.name(), payload.second(), payload.first());
-			if (userSetting == null) {
-				setting = systemSetting;
-			} else {
-				setting = userSetting;
-			}
-
-			if (setting == null) {
-				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-			}
-
-			return ResponseEvent.response(ConfigSettingDetail.from(setting));
+			Pair<String, String> input = req.getPayload();
+			return ResponseEvent.response(ConfigSettingDetail.from(getSetting(input.first(), input.second())));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {
@@ -137,11 +130,16 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
+		//
+		// TODO: Handle saving of user settings
+		// 1. A system setting can be saved only by super administrator
+		// 2. A user setting can be saved either by super administrator or the user for whom the setting is created
+		//
 		AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 		ConfigSettingDetail detail = req.getPayload();
 
 		String module = detail.getModule();
-		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
+		Map<String, ConfigSetting> moduleSettings = systemSettings.get(module);
 		if (moduleSettings == null || moduleSettings.isEmpty()) {
 			return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 		}
@@ -186,18 +184,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public ResponseEvent<File> getSettingFile(RequestEvent<Pair<String, String>> req) {
-		Pair<String, String> payload = req.getPayload();
 		try {
-			Map<String, ConfigSetting> moduleSettings = configSettings.get(payload.first());
-			if (moduleSettings == null) {
-				return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-			}
-
-			ConfigSetting setting = moduleSettings.get(payload.second());
-			if (setting == null) {
-				return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-			}
-
+			Pair<String, String> payload = req.getPayload();
 			return ResponseEvent.response(getSettingFile(payload.first(), payload.second()));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -250,17 +238,13 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public String getStrSetting(String module, String name,	String... defValue) {
-		Map<String, ConfigSetting> moduleSettings = configSettings.get(module);
-		
-		String value = null;
-		if (moduleSettings != null) {
-			ConfigSetting setting = moduleSettings.get(name);
-			if (setting != null) {
-				value = setting.getValue();
+		ConfigSetting setting = getSetting(module, name);
 
-				if (setting.getProperty().isSecured() && value != null) {
-					value = Utility.decrypt(value);
-				}
+		String value = null;
+		if (setting != null) {
+			value = setting.getValue();
+			if (setting.getProperty().isSecured() && value != null) {
+				value = Utility.decrypt(value);
 			}
 		}
 
@@ -375,26 +359,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public void reload() {
-		Map<String, Map<String, ConfigSetting>> settingsMap = new ConcurrentHashMap<>();
-		
-		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings(null, ConfigProperty.AccessLevel.System.name());
-		for (ConfigSetting setting : settings) {
-			ConfigProperty prop = setting.getProperty();
-			Hibernate.initialize(prop.getAllowedValues()); // pre-init
+		configProps    = loadProperties();
+		systemSettings = loadSystemSettings();
 
-			Module module = prop.getModule();
-
-			Map<String, ConfigSetting> moduleSettings = settingsMap.get(module.getName());
-			if (moduleSettings == null) {
-				moduleSettings = new ConcurrentHashMap<>();
-				settingsMap.put(module.getName(), moduleSettings);
-			}
-
-			moduleSettings.put(prop.getName(), setting);
-		}
-
-		this.configSettings = settingsMap;
-		
 		for (List<ConfigChangeListener> listeners : changeListeners.values()) {
 			for (ConfigChangeListener listener : listeners) {
 				listener.onConfigChange(StringUtils.EMPTY, StringUtils.EMPTY);
@@ -415,7 +382,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	
 	@Override
 	public Map<String, Object> getLocaleSettings() {
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 
 		Locale locale = Locale.getDefault();
 		result.put("locale", locale.toString());
@@ -450,23 +417,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	
 	@Override
 	public Map<String, String> getWelcomeVideoSettings() {
-		Map<String, ConfigSetting> moduleConfig = configSettings.get("common");
-		if (moduleConfig == null) {
-			return Collections.emptyMap();
-		}
-		
-		Map<String, String> result = new HashMap<String, String>();
-		
-		ConfigSetting source = moduleConfig.get("welcome_video_source");
-		if (source != null) {
-			result.put("welcome_video_source", source.getValue());
-		}
-		
-		ConfigSetting url = moduleConfig.get("welcome_video_url");
-		if (url != null) {
-			result.put("welcome_video_url", url.getValue());
-		}
-		
+		Map<String, String> result = new HashMap<>();
+		result.put("welcome_video_source", getStrSetting("common", "welcome_video_source", (String) null));
+		result.put("welcome_video_url",    getStrSetting("common", "welcome_video_url", (String) null));
 		return result;
 	}
 	
@@ -501,23 +454,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	
 	@Override
 	public Map<String, String> getPasswordSettings() {
-		Map<String, ConfigSetting> moduleConfig = configSettings.get("auth");
-		if (moduleConfig == null) {
-			return Collections.emptyMap();
-		}
-		
 		Map<String, String> result = new HashMap<>();
-		
-		ConfigSetting pattern = moduleConfig.get("password_pattern");
-		if (pattern != null) {
-			result.put("pattern", pattern.getValue());
-		}
-		
-		ConfigSetting desc = moduleConfig.get("password_rule");
-		if (desc != null) {
-			result.put("desc", desc.getValue());
-		}
-		
+		result.put("pattern", getStrSetting("auth", "password_pattern", (String) null));
+		result.put("desc",    getStrSetting("auth", "password_rule", (String) null));
 		return result;
 	}
 
@@ -550,9 +489,66 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	public Map<String, String> getDeploymentSiteAssets() {
 		Map<String, String> result = new HashMap<>();
-		result.put("siteUrl", getDeploymentSiteUrl());
+		result.put("siteUrl",  getDeploymentSiteUrl());
 		result.put("siteLogo", getDeploymentSiteLogo());
 		return result;
+	}
+
+	private Map<String, ConfigProperty> loadProperties() {
+		List<ConfigProperty> props = daoFactory.getConfigSettingDao().getAllProperties();
+		return props.stream().collect(Collectors.toMap(p -> p.getModule().getName() + ":" + p.getName(), p -> p));
+	}
+
+	private Map<String, Map<String, ConfigSetting>> loadSystemSettings() {
+		Map<String, Map<String, ConfigSetting>> settingsMap = new ConcurrentHashMap<>();
+
+		List<ConfigSetting> settings = daoFactory.getConfigSettingDao().getAllSettings(ConfigProperty.Level.SYSTEM.name(), null);
+		for (ConfigSetting setting : settings) {
+			ConfigProperty prop = setting.getProperty();
+			Hibernate.initialize(prop.getAllowedValues()); // pre-init
+
+			Module module = prop.getModule();
+
+			Map<String, ConfigSetting> moduleSettings = settingsMap.get(module.getName());
+			if (moduleSettings == null) {
+				moduleSettings = new ConcurrentHashMap<>();
+				settingsMap.put(module.getName(), moduleSettings);
+			}
+
+			moduleSettings.put(prop.getName(), setting);
+		}
+
+		return settingsMap;
+	}
+
+	private ConfigSetting getSetting(String moduleName, String propName) {
+		ConfigSetting setting = null;
+
+		ConfigProperty property = configProps.get(moduleName + ":" + propName);
+		if (property == null) {
+			throw OpenSpecimenException.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+		}
+
+		User currentUser = AuthUtil.getCurrentUser();
+		if (currentUser != null && property.getLevels().contains(ConfigProperty.Level.USER)) {
+			setting = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(
+				moduleName, propName, ConfigProperty.Level.USER.name(), currentUser.getId());
+		}
+
+		if (setting == null) {
+			Map<String, ConfigSetting> moduleSettings = systemSettings.get(moduleName);
+			if (moduleSettings == null) {
+				throw OpenSpecimenException.userError(ConfigErrorCode.MODULE_NOT_FOUND);
+			}
+
+			setting = moduleSettings.get(propName);
+		}
+
+		if (setting == null) {
+			throw OpenSpecimenException.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+		}
+
+		return setting;
 	}
 
 	private boolean isValidSetting(ConfigProperty property, String setting) {
@@ -656,31 +652,15 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	}
 
 	private String getDeploymentSiteUrl() {
-		Map<String, ConfigSetting> moduleConfig = configSettings.get("common");
-		if (moduleConfig == null) {
-			return null;
-		}
-
-		ConfigSetting url = moduleConfig.get("deployment_site_url");
-		return url != null ? url.getValue() : null;
+		return getStrSetting("common", "deployment_site_url", (String) null);
 	}
 
 	private String getDeploymentSiteLogo() {
-		Map<String, ConfigSetting> moduleConfig = configSettings.get("common");
-		if (moduleConfig == null) {
-			return null;
-		}
-
 		String result = null;
-		ConfigSetting logo = moduleConfig.get("deployment_site_logo");
-		if (logo != null && StringUtils.isNotBlank(logo.getValue())) {
-			ConfigSetting appUrl = moduleConfig.get("app_url");
-			String prefix = "";
-			if (appUrl != null && StringUtils.isNotBlank(appUrl.getValue())) {
-				prefix = appUrl.getValue();
-			}
-
-			result = prefix + "/rest/ng/config-settings/deployment-site-logo";
+		String logo = getStrSetting("common", "deployment_site_logo", (String) null);
+		if (StringUtils.isNotBlank(logo)) {
+			String appUrl = getStrSetting("common", "app_url", (String) null);
+			result = (appUrl != null ? appUrl : "") + "/rest/ng/config-settings/deployment-site-logo";
 		}
 
 		return result;

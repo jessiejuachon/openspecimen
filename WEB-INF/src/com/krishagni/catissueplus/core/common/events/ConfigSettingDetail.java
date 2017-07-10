@@ -1,12 +1,11 @@
 package com.krishagni.catissueplus.core.common.events;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty.DataType;
@@ -32,9 +31,9 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 	
 	private boolean secured;
 
-	private String accessLevel;
+	private String level;
 
-	private Long objId;
+	private Long objectId;
 
 	public String getModule() {
 		return module;
@@ -108,20 +107,20 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		this.secured = secured;
 	}
 
-	public String getAccessLevel() {
-		return accessLevel;
+	public String getLevel() {
+		return level;
 	}
 
-	public void setAccessLevel(String accessLevel) {
-		this.accessLevel = accessLevel;
+	public void setLevel(String level) {
+		this.level = level;
 	}
 
-	public Long getObjId() {
-		return objId;
+	public Long getObjectId() {
+		return objectId;
 	}
 
-	public void setObjId(Long objId) {
-		this.objId = objId;
+	public void setObjectId(Long objectId) {
+		this.objectId = objectId;
 	}
 
 	@Override
@@ -149,19 +148,12 @@ public class ConfigSettingDetail implements Comparable<ConfigSettingDetail> {
 		result.setSecured(property.isSecured());
 		result.setValue(property.isSecured() ? "********" : setting.getValue());
 		result.setActivationDate(setting.getActivationDate());
-		result.setAccessLevel(setting.getaccessLevel().name());
-		result.setObjId(setting.getObjId());
+		result.setLevel(setting.getLevel().name());
+		result.setObjectId(setting.getObjectId());
 		return result;
 	}
 	
 	public static List<ConfigSettingDetail> from(Collection<ConfigSetting> settings) {
-		List<ConfigSettingDetail> result = new ArrayList<ConfigSettingDetail>();
-		
-		for (ConfigSetting cs :  settings) {
-			result.add(from(cs));
-		}
-		
-		Collections.sort(result);
-		return result;
+		return settings.stream().map(ConfigSettingDetail::from).sorted().collect(Collectors.toList());
 	}
 }
