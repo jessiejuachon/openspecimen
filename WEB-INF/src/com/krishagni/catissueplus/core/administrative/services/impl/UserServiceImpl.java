@@ -160,7 +160,12 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	@Override
 	public UserDetails loadUserByUsername(String username)
 	throws UsernameNotFoundException {
-		return daoFactory.getUserDao().getUser(username, DEFAULT_AUTH_DOMAIN);
+		User user = daoFactory.getUserDao().getUser(username, DEFAULT_AUTH_DOMAIN);
+		if(user != null)
+            return user;
+		else {
+			throw new UsernameNotFoundException(username);
+		}
 	}
 	
 	@Override
