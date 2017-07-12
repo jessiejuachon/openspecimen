@@ -17,9 +17,9 @@ public class OpenSpecimenEvent<T> extends ApplicationEvent {
 	
 	private Date time;
 	
-	public OpenSpecimenEvent(EventCode eventName, T eventData) {
+	public OpenSpecimenEvent(EventCode eventCode, T eventData) {
 		super(eventData);
-		this.eventCode = eventName;
+		this.eventCode = eventCode;
 		this.eventData = eventData;
 		this.time = Calendar.getInstance().getTime();
 		this.user = AuthUtil.getCurrentUser();
