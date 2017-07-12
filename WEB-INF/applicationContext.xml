@@ -590,7 +590,7 @@
 
   <bean id="appCtxProvider" class="com.krishagni.catissueplus.core.common.OpenSpecimenAppCtxProvider"/>
   
-  <security:authentication-manager alias="authManager">
+  <security:authentication-manager alias="authManager"> 
     <security:authentication-provider ref="openSpecimenAuthProvider" />
   </security:authentication-manager>
   

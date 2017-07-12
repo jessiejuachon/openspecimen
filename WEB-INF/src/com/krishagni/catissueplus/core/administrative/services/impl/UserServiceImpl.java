@@ -162,7 +162,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	throws UsernameNotFoundException {
 		User user = daoFactory.getUserDao().getUser(username, DEFAULT_AUTH_DOMAIN);
 		if(user != null)
-            return user;
+			return user;
 		else {
 			throw new UsernameNotFoundException(username);
 		}
