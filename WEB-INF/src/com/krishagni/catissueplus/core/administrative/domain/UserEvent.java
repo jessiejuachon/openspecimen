@@ -1,9 +1,11 @@
-package com.krishagni.catissueplus.core.administrative.events;
+package com.krishagni.catissueplus.core.administrative.domain;
 
 import com.krishagni.catissueplus.core.common.events.EventCode;
 
 public enum UserEvent implements EventCode {
-	CREATED;
+	CREATED,
+
+	XTRA_AUTH;
 
 	@Override
 	public String code() {

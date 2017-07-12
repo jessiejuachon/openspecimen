@@ -9,28 +9,36 @@ import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 
 public class OpenSpecimenEvent<T> extends ApplicationEvent {
-	private EventCode eventName;
+	private EventCode eventCode;
 	
-	private T source;
+	private T eventData;
 	
 	private User user;
 	
 	private Date time;
 	
-	public OpenSpecimenEvent(T source, EventCode eventName) {
-		super(source);
-		this.source = source;
-		this.eventName = eventName;
+	public OpenSpecimenEvent(EventCode eventName, T eventData) {
+		super(eventData);
+		this.eventCode = eventName;
+		this.eventData = eventData;
 		this.time = Calendar.getInstance().getTime();
 		this.user = AuthUtil.getCurrentUser();
 	}
 
-	public Object getSource() {
-		return source;
+	public EventCode getEventCode() {
+		return eventCode;
 	}
 
-	public void setSource(T object) {
-		this.source = object;
+	public void setEventCode(EventCode eventCode) {
+		this.eventCode = eventCode;
+	}
+
+	public T getEventData() {
+		return eventData;
+	}
+
+	public void setEventData(T eventData) {
+		this.eventData = eventData;
 	}
 
 	public User getUser() {
@@ -43,14 +51,6 @@ public class OpenSpecimenEvent<T> extends ApplicationEvent {
 
 	public Date getTime() {
 		return time;
-	}
-
-	public String getEventName() {
-		return eventName.code();
-	}
-
-	public void setEventName(EventCode eventName) {
-		this.eventName = eventName;
 	}
 
 	public void setTime(Date time) {

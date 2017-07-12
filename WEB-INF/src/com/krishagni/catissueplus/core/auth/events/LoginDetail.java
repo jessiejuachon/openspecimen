@@ -19,15 +19,7 @@ public class LoginDetail {
 	
 	private String requestMethod;
 	
-	private Map<String, String> props = new HashMap<String, String>();
-
-	public Map<String, String> getProps() {
-		return props;
-	}
-
-	public void setProps(Map<String, String> props) {
-		this.props = props;
-	}
+	private Map<String, String> props = new HashMap<>();
 
 	public String getLoginName() {
 		return loginName;
@@ -85,4 +77,11 @@ public class LoginDetail {
 		this.requestMethod = requestMethod;
 	}
 
+	public Map<String, String> getProps() {
+		return props;
+	}
+
+	public void setProps(Map<String, String> props) {
+		this.props = props;
+	}
 }

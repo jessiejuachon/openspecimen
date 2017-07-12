@@ -23,7 +23,7 @@ public class EventPublisher implements ApplicationEventPublisherAware {
 		return instance;
 	}
 	
-	public <T> void publish(T source, EventCode eventCode) {
-		publisher.publishEvent(new OpenSpecimenEvent<>(source, eventCode));
+	public <T> void publish(EventCode eventCode, T eventData) {
+		publisher.publishEvent(new OpenSpecimenEvent<>(eventCode, eventData));
 	}
 }

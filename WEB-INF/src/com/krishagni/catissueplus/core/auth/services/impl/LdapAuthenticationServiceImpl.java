@@ -31,7 +31,7 @@ public class LdapAuthenticationServiceImpl implements AuthenticationService {
 		try {
 			UsernamePasswordAuthenticationToken authenticationToken =
 				new UsernamePasswordAuthenticationToken(loginDetail.getLoginName(), loginDetail.getPassword());
-		
+
 			provider.authenticate(authenticationToken);
 		} catch (AuthenticationException e) {
 			throw OpenSpecimenException.userError(AuthErrorCode.INVALID_CREDENTIALS);
