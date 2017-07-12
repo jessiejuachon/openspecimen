@@ -52,6 +52,9 @@ import com.krishagni.catissueplus.core.common.events.ResponseEvent;
 import com.krishagni.catissueplus.core.common.events.UserSummary;
 import com.krishagni.catissueplus.core.common.service.EmailService;
 import com.krishagni.catissueplus.core.common.service.impl.EventPublisher;
+import com.krishagni.catissueplus.core.common.domain.Notification;
+import com.krishagni.catissueplus.core.common.util.NotifUtil;
+import com.krishagni.catissueplus.core.common.util.EmailUtil;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 import com.krishagni.catissueplus.core.common.util.ConfigUtil;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
@@ -75,11 +78,11 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	
 	private static final String NEW_USER_REQUEST_EMAIL_TMPL = "users_new_user_request";
 	
-	private static final String USER_REQUEST_REJECTED_TMPL = "users_request_rejected";
-	
 	private static final String USER_CREATED_EMAIL_TMPL = "users_created";
 
 	private static final String ANNOUNCEMENT_EMAIL_TMPL = "announcement_email";
+
+	private static final String USER_OP_EMAIL_TMPL = "users_op_notif";
 
 	private static final String ADMIN_MOD = "administrative";
 
@@ -90,6 +93,15 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	private static final String AUTH_MOD = "auth";
 
 	private static final String FORGOT_PASSWD = "forgot_password";
+
+	private static final Map<String, String> NOTIF_OPS = new HashMap<String, String>() {{
+		put("created",  "CREATE");
+		put("deleted",  "DELETE");
+		put("rejected", "DELETE");
+		put("unlocked", "UPDATE");
+		put("approved", "UPDATE");
+		put("locked",   "UPDATE");
+	}};
 
 	private DaoFactory daoFactory;
 
@@ -246,12 +258,14 @@ public class UserServiceImpl implements UserService, InitializingBean {
 			if (user.isInstituteAdmin()) {
 				addDefaultSiteAdminRole(user);
 			}
-			
+
 			if (isSignupReq) {
 				sendUserSignupEmail(user);
-				sendNewUserRequestEmail(user);
-			} else {				
-				notifyUserCreated(user);
+				notifyUserSignup(user);
+			} else {
+				ForgotPasswordToken token = generateForgotPwdToken(user);
+				sendUserCreatedEmail(user, token);
+				notifyUserUpdated(user, "created");
 			}
 
 			return ResponseEvent.response(UserDetail.from(user));
@@ -295,7 +309,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 			if (!isStatusChangeAllowed(newStatus)) {
 				return ResponseEvent.userError(UserErrorCode.STATUS_CHANGE_NOT_ALLOWED);
 			}
- 			
+
 			if (isActivated(currentStatus, newStatus)) {
 				user.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
 				onAccountActivation(user, currentStatus);
@@ -344,13 +358,16 @@ public class UserServiceImpl implements UserService, InitializingBean {
 			 * So creating user object clone.
 			 */
 			User user = new User();
+			user.setId(existing.getId());
 			user.setActivityStatus(existing.getActivityStatus());
 			user.update(existing);
 			existing.delete();
 
 			boolean sendRequestRejectedMail = user.getActivityStatus().equals(Status.ACTIVITY_STATUS_PENDING.getStatus());
 			if (sendRequestRejectedMail) {
-				sendUserRequestRejectedEmail(user);
+				notifyUserUpdated(user, "rejected");
+			} else {
+				notifyUserUpdated(user, "deleted");
 			}
 
 			return ResponseEvent.response(UserDetail.from(existing));
@@ -643,37 +660,89 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	} 
 	
 	private void sendUserCreatedEmail(User user, ForgotPasswordToken token) {
-		Map<String, Object> props = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<>();
 		props.put("user", user);
 		props.put("token", token);
+		props.put("ccAdmin", false);
 		
-		emailService.sendEmail(USER_CREATED_EMAIL_TMPL, new String[]{user.getEmailAddress()}, props);
+		EmailUtil.getInstance().sendEmail(USER_CREATED_EMAIL_TMPL, new String[]{user.getEmailAddress()}, null, props);
 	}
-	
+
 	private void sendUserSignupEmail(User user) {
-		Map<String, Object> props = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<>();
 		props.put("user", user);
+		props.put("ccAdmin", false);
 		
 		emailService.sendEmail(SIGNED_UP_EMAIL_TMPL, new String[]{user.getEmailAddress()}, props);
 	}
 	
-	private void sendNewUserRequestEmail(User user) {
-		String [] subjParams = new String[] {user.getFirstName(), user.getLastName()};
-		Map<String, Object> props = new HashMap<String, Object>();
-		props.put("newUser", user);
-		props.put("$subject", subjParams);
-		
-		String[] to = {ConfigUtil.getInstance().getAdminEmailId()};
-		emailService.sendEmail(NEW_USER_REQUEST_EMAIL_TMPL, to, props);
+	private void notifyUserSignup(User newUser) {
+		String [] subjParams = new String[] {newUser.getFirstName(), newUser.getLastName()};
+
+		Map<String, Object> emailProps = new HashMap<>();
+		emailProps.put("newUser",  newUser);
+		emailProps.put("$subject", subjParams);
+		emailProps.put("ccAdmin",  false);
+
+		List<User> users = daoFactory.getUserDao().getSuperAndInstituteAdmins(newUser.getInstitute().getName());
+		sendEmails(users, NEW_USER_REQUEST_EMAIL_TMPL, emailProps);
+
+		String msg = MessageUtil.getInstance().getMessage(NEW_USER_REQUEST_EMAIL_TMPL + "_subj", subjParams);
+		addNotification(newUser, users, "created", msg);
 	}
-	
-	private void sendUserRequestRejectedEmail(User user) {
-		Map<String, Object> props = new HashMap<String, Object>();
-		props.put("user", user);
-		
-		emailService.sendEmail(USER_REQUEST_REJECTED_TMPL, new String[]{user.getEmailAddress()}, props);
+
+	private void notifyUserUpdated(User user, String op) {
+		String opDesc = MessageUtil.getInstance().getMessage("users_op_" + op);
+		String [] subjParams = new String[] {user.getFirstName(), user.getLastName(), opDesc};
+
+		Map<String, Object> emailProps = new HashMap<>();
+		emailProps.put("currentUser", AuthUtil.getCurrentUser());
+		emailProps.put("updatedUser", user);
+		emailProps.put("$subject", subjParams);
+		emailProps.put("ccAdmin", false);
+		emailProps.put("operation", op);
+
+		List<User> users = daoFactory.getUserDao().getSuperAndInstituteAdmins(user.getInstitute().getName());
+		if (AuthUtil.getCurrentUser() != null && !users.contains(AuthUtil.getCurrentUser())) {
+			//
+			// if the current user is not institute or super admin
+			//
+			users.add(AuthUtil.getCurrentUser());
+		}
+
+		if (!op.equals("created") && !op.equals("approved") && !users.contains(user)) {
+			//
+			// hack: for approved and created op, a separate email is sent to the user
+			//
+			users.add(user);
+		}
+
+		sendEmails(users, USER_OP_EMAIL_TMPL, emailProps);
+
+		String msg = MessageUtil.getInstance().getMessage(USER_OP_EMAIL_TMPL + "_subj", subjParams);
+		addNotification(user, users, op, msg);
 	}
-	
+
+	private void sendEmails(List<User> rcpts, String emailTmpl, Map<String, Object> emailProps) {
+		for (User rcpt : rcpts) {
+			emailProps.put("user", rcpt);
+			EmailUtil.getInstance().sendEmail(emailTmpl, new String[] {rcpt.getEmailAddress()}, null, emailProps);
+		}
+	}
+
+	private void addNotification(User tgtUser, List<User> notifyUsers, String op, String message) {
+		User triggeredBy = AuthUtil.getCurrentUser();
+
+		Notification notif = new Notification();
+		notif.setEntityType(User.getEntityName());
+		notif.setEntityId(tgtUser.getId());
+		notif.setOperation(NOTIF_OPS.get(op));
+		notif.setMessage(message);
+		notif.setCreatedBy(triggeredBy != null ? triggeredBy : tgtUser);
+		notif.setCreationTime(Calendar.getInstance().getTime());
+		NotifUtil.getInstance().notify(notif, Collections.singletonMap("user-overview", notifyUsers));
+	}
+
 	private void resetAttrs(User newUser) {
 		resetAttrs(null, newUser);
 	}
@@ -811,10 +880,13 @@ public class UserServiceImpl implements UserService, InitializingBean {
 	}
 
 	private void onAccountActivation(User user, String prevStatus) {
-		if (prevStatus.equals(Status.ACTIVITY_STATUS_PENDING.getStatus())) {			
-			notifyUserCreated(user);
+		if (prevStatus.equals(Status.ACTIVITY_STATUS_PENDING.getStatus())) {
+			ForgotPasswordToken token = generateForgotPwdToken(user);
+			sendUserCreatedEmail(user, token);
+			notifyUserUpdated(user, "approved");
 		} else if (prevStatus.equals(Status.ACTIVITY_STATUS_LOCKED.getStatus())) {
 			addAutoLogin(user);
+			notifyUserUpdated(user, "unlocked");
 		}
 	}
 
