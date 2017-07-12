@@ -590,11 +590,15 @@
 
   <bean id="appCtxProvider" class="com.krishagni.catissueplus.core.common.OpenSpecimenAppCtxProvider"/>
   
-  <security:authentication-manager alias="authManager">
-    <security:authentication-provider user-service-ref="userSvc" >
-       <security:password-encoder ref="passwordEncoder"></security:password-encoder>
-    </security:authentication-provider>
+  <security:authentication-manager alias="authManager"> 
+    <security:authentication-provider ref="openSpecimenAuthProvider" />
   </security:authentication-manager>
+  
+  <bean id="openSpecimenAuthProvider"
+    class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+    <property name="userDetailsService" ref="userSvc"/>
+    <property name="passwordEncoder" ref="passwordEncoder"/>
+  </bean>
   
   <bean id="samlFilter" class="com.krishagni.catissueplus.rest.filter.SamlFilter">
     <property name="daoFactory" ref="biospecimenDaoFactory"/>

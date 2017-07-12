@@ -11,6 +11,7 @@
       <div class="os-group-controls">
         <input type="text"     class="form-control" ng-model="loginData.loginName" placeholder="{{'user.login_name' | translate}}">
         <input type="password" class="form-control" ng-model="loginData.password"  placeholder="{{'user.password' | translate}}">
+		<os-plugin-hooks view-name="'otp'" sec-name="'otp-input'"></os-plugin-hooks>
         <div ng-if="domains.length > 1">
           <os-select ng-model="loginData.domainName" list="domains" name="domain"
             ng-click="$event.stopPropagation()" placeholder="{{'user.domain_name' | translate}}" required>
@@ -21,6 +22,7 @@
       <button type="submit" class="btn btn-block btn-primary" translate="user.sign_in">Sign in</button>
       <div style="padding-top: 5px;" ng-if="!!global.appProps.forgot_password">
         <a ui-sref="forgot-password" translate="user.forgot_password">Forgot password?</a>
+        <os-plugin-hooks view-name="'resend-qr'" sec-name="'resend-qr-option'"></os-plugin-hooks>
       </div>
     </form>
   </div>
