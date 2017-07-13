@@ -145,7 +145,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		}
-		
+
 		String module = detail.getModule();
 		Map<String, ConfigSetting> moduleSettings = systemSettings.get(module);
 		if (moduleSettings == null || moduleSettings.isEmpty()) {

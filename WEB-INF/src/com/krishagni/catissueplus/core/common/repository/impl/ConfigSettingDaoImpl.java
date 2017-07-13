@@ -36,10 +36,10 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 		}
 
 		List<Object[]> propSettings = getCurrentSession().getNamedQuery(GET_ALL)
-			  .setParameter("level", level)
-			  .setParameter("objectId", objectId)
-			  .setParameter("moduleName", moduleName)
-			  .list();
+			.setParameter("level", level)
+			.setParameter("objectId", objectId)
+			.setParameter("moduleName", moduleName)
+			.list();
 
 		List<ConfigSetting> result = new ArrayList<>();
 		for (Object[] propSetting : propSettings) {

@@ -8,7 +8,7 @@ public enum ConfigErrorCode implements ErrorCode {
 	SETTING_NOT_FOUND,
 	
 	INVALID_SETTING_VALUE,
-	
+
 	FILE_MOVED_OR_DELETED,
 
 	INVALID_CONFIG_LEVEL;
