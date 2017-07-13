@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+  "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+  "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping auto-import="false">
+  <class name="com.krishagni.catissueplus.core.common.domain.PrintLabelTokens" table="OS_PRINT_LABEL_TOKENS">
+
+    <id name="id" column="IDENTIFIER">
+      <generator class="native">
+        <param name="sequence">OS_PRINT_LABEL_TOKENS_SEQ</param>
+      </generator>
+    </id>
+
+    <many-to-one name="rule" column="RULE_ID"/>
+
+    <property name="token" column="TOKEN"/>
+  </class>
+</hibernate-mapping>

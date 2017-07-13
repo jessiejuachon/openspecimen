@@ -144,4 +144,108 @@
       baseTableName="OS_ORDERS" baseColumnNames="SPECIMEN_LIST_ID"
       referencedTableName="CATISSUE_SPECIMENLIST_TAGS" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
+
+  <changeSet author="agosavi" id="print rules table">
+    <createTable tableName="OS_PRINT_RULES">
+      <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="CP_ID" type="${int.type}">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="VISIT_SITE_ID" type="${int.type}">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="SPECIMEN_CLASS" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="SPECIMEN_TYPE" type="${text.type}(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="USER_ID" type="${int.type}">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="IP_RANGE" type="${text.type}(64)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="LABEL_TYPE" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="LABEL_DESIGN" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="PRINTER" type="${text.type}(128)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="CMD_FILE_DIR" type="${text.type}(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="CMD_FILE_FMT" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="LINEAGE" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet author="agosavi" id="print rules sequence" dbms="oracle">
+    <createSequence sequenceName="OS_PRINT_RULES_SEQ" startValue="1" incrementBy="1" ordered="true" />
+  </changeSet>
+
+  <changeSet author="agosavi" id="FK on CP in print rules">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_CP_ID"
+      baseTableName="OS_PRINT_RULES" baseColumnNames="CP_ID"
+      referencedTableName="CATISSUE_COLLECTION_PROTOCOL" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
+  <changeSet author="agosavi" id="FK on visit site in print rules">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_VISITE_SITE_ID"
+      baseTableName="OS_PRINT_RULES" baseColumnNames="VISIT_SITE_ID"
+      referencedTableName="CATISSUE_SITE" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
+  <changeSet author="agosavi" id="FK on user id in print rules">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_USER_ID"
+      baseTableName="OS_PRINT_RULES" baseColumnNames="USER_ID"
+      referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
+  <changeSet author="agosavi" id="print label tokens table">
+    <createTable tableName="OS_PRINT_LABEL_TOKENS">
+      <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="RULE_ID" type="${int.type}">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="TOKEN" type="${text.type}(32)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet author="agosavi" id="print label tokens sequence" dbms="oracle">
+    <createSequence sequenceName="OS_PRINT_LABEL_TOKENS_SEQ" startValue="1" incrementBy="1" ordered="true" />
+  </changeSet>
+
+  <changeSet author="agosavi" id="FK on print rule id in print label tokens">
+    <addForeignKeyConstraint constraintName="FK_PRINT_LABEL_TOKENS_RULE_ID"
+      baseTableName="OS_PRINT_LABEL_TOKENS" baseColumnNames="RULE_ID"
+      referencedTableName="OS_PRINT_RULES" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
 </databaseChangeLog>
