@@ -163,7 +163,7 @@
         <constraints nullable="false"/>
       </column>
 
-      <column name="SPECIMEN_TYPE" type="${text.type}(255)">
+      <column name="SPECIMEN_TYPE" type="${int.type}">
         <constraints nullable="false"/>
       </column>
 
@@ -215,6 +215,12 @@
     <addForeignKeyConstraint constraintName="FK_PRINT_RULES_VISITE_SITE_ID"
       baseTableName="OS_PRINT_RULES" baseColumnNames="VISIT_SITE_ID"
       referencedTableName="CATISSUE_SITE" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
+  <changeSet author="agosavi" id="FK on specimen type in print rules">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_SPMN_TYPE"
+      baseTableName="OS_PRINT_RULES" baseColumnNames="SPECIMEN_TYPE"
+      referencedTableName="CATISSUE_PERMISSIBLE_VALUE" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
   <changeSet author="agosavi" id="FK on user id in print rules">

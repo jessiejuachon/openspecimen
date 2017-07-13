@@ -9,6 +9,33 @@ import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 
 public class PrintRules extends BaseEntity {
+	public enum CmdFileFmt {
+		CSV("csv"),
+		KEY_VALUE("key-value");
+
+		private String fmt;
+
+		private CmdFileFmt(String fmt) {
+			this.fmt = fmt;
+		}
+
+		public static CmdFileFmt get(String input) {
+			for (CmdFileFmt cfFmt : values()) {
+				if (cfFmt.fmt.equals(input)) {
+					return cfFmt;
+				}
+			}
+
+			return null;
+		}
+	};
+
+	public enum Lineage {
+		ALIQUOTS,
+		PARENT,
+		DERIVATIVE
+	};
+
 	private CollectionProtocol collectionProtocol;
 
 	private Site visitSite;
@@ -29,9 +56,9 @@ public class PrintRules extends BaseEntity {
 
 	private String cmdFileDir;
 
-	private String cmdFileFmt;
+	private CmdFileFmt cmdFileFmt;
 
-	private String lineage;
+	private Lineage lineage;
 
 	private Set<PrintLabelTokens> labelTokens = new HashSet<>();
 
@@ -115,19 +142,19 @@ public class PrintRules extends BaseEntity {
 		this.cmdFileDir = cmdFileDir;
 	}
 
-	public String getCmdFileFmt() {
+	public CmdFileFmt getCmdFileFmt() {
 		return cmdFileFmt;
 	}
 
-	public void setCmdFileFmt(String cmdFileFmt) {
+	public void setCmdFileFmt(CmdFileFmt cmdFileFmt) {
 		this.cmdFileFmt = cmdFileFmt;
 	}
 
-	public String getLineage() {
+	public Lineage getLineage() {
 		return lineage;
 	}
 
-	public void setLineage(String lineage) {
+	public void setLineage(Lineage lineage) {
 		this.lineage = lineage;
 	}
 
