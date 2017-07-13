@@ -48,6 +48,7 @@ import com.krishagni.catissueplus.core.common.service.ConfigurationService;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
+import com.krishagni.rbac.common.errors.RbacErrorCode;
 
 public class ConfigurationServiceImpl implements ConfigurationService, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
 	
@@ -87,7 +88,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			try {
 				propLevel = ConfigProperty.Level.valueOf(level);
 			} catch (Exception e) {
-				// TODO: raise an appropriate error code
+				return ResponseEvent.userError(ConfigErrorCode.INVALID_CONFIG_LEVEL);
 			}
 		}
 
@@ -130,14 +131,21 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@Override
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
-		//
-		// TODO: Handle saving of user settings
-		// 1. A system setting can be saved only by super administrator
-		// 2. A user setting can be saved either by super administrator or the user for whom the setting is created
-		//
-		AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 		ConfigSettingDetail detail = req.getPayload();
-
+		String level = detail.getLevel();
+		try {
+			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
+				AccessCtrlMgr.getInstance().ensureUserIsAdmin();
+			} else if (level.equals(ConfigProperty.Level.USER.name())) {
+				User user = AuthUtil.getCurrentUser();
+				if (!user.isAdmin() && user.getId() != detail.getObjectId()) {
+					throw OpenSpecimenException.userError(RbacErrorCode.ACCESS_DENIED);
+				}
+			}
+		} catch (OpenSpecimenException ose) {
+			return ResponseEvent.error(ose);
+		}
+		
 		String module = detail.getModule();
 		Map<String, ConfigSetting> moduleSettings = systemSettings.get(module);
 		if (moduleSettings == null || moduleSettings.isEmpty()) {
@@ -597,6 +605,8 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		newSetting.setProperty(existing.getProperty());
 		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
 		newSetting.setActivationDate(Calendar.getInstance().getTime());
+		newSetting.setLevel(existing.getLevel());
+		newSetting.setObjectId(existing.getObjectId());
 		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
 
 		if (value != null && existing.getProperty().isSecured()) {

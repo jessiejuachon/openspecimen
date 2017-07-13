@@ -51,6 +51,7 @@
         p
       from
         com.krishagni.catissueplus.core.common.domain.ConfigProperty p
+        join fetch p.levels level
     </query>
   </class>
 </hibernate-mapping>
