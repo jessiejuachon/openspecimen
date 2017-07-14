@@ -7,7 +7,7 @@ import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class printRulesDetail {
+public class PrintRulesDetail {
 	private Long id;
 
 	private CollectionProtocol collectionProtocol;
