@@ -3,6 +3,7 @@ package com.krishagni.catissueplus.core.common.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.krishagni.catissueplus.core.administrative.domain.PermissibleValue;
 import com.krishagni.catissueplus.core.administrative.domain.Site;
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
@@ -42,7 +43,7 @@ public class PrintRules extends BaseEntity {
 
 	private String specimenClass;
 
-	private String specimenType;
+	private PermissibleValue specimenType;
 
 	private User user;
 
@@ -86,11 +87,11 @@ public class PrintRules extends BaseEntity {
 		this.specimenClass = specimenClass;
 	}
 
-	public String getSpecimenType() {
+	public PermissibleValue getSpecimenType() {
 		return specimenType;
 	}
 
-	public void setSpecimenType(String specimenType) {
+	public void setSpecimenType(PermissibleValue specimenType) {
 		this.specimenType = specimenType;
 	}
 

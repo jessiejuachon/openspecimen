@@ -1,24 +1,30 @@
 package com.krishagni.catissueplus.core.common.events;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import com.krishagni.catissueplus.core.administrative.domain.Site;
-import com.krishagni.catissueplus.core.administrative.domain.User;
-import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
+import com.krishagni.catissueplus.core.common.domain.PrintLabelTokens;
+import com.krishagni.catissueplus.core.common.domain.PrintRules;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class PrintRulesDetail {
 	private Long id;
 
-	private CollectionProtocol collectionProtocol;
+	private String collectionProtocol;
 
-	private Site visitSite;
+	private String visitSite;
 
 	private String specimenClass;
 
 	private String specimenType;
 
-	private User user;
+	private Long userId;
 
 	private String ipRange;
 
@@ -44,19 +50,19 @@ public class PrintRulesDetail {
 		this.id = id;
 	}
 
-	public CollectionProtocol getCollectionProtocol() {
+	public String getCollectionProtocol() {
 		return collectionProtocol;
 	}
 
-	public void setCollectionProtocol(CollectionProtocol collectionProtocol) {
+	public void setCollectionProtocol(String collectionProtocol) {
 		this.collectionProtocol = collectionProtocol;
 	}
 
-	public Site getVisitSite() {
+	public String getVisitSite() {
 		return visitSite;
 	}
 
-	public void setVisitSite(Site visitSite) {
+	public void setVisitSite(String visitSite) {
 		this.visitSite = visitSite;
 	}
 
@@ -76,12 +82,12 @@ public class PrintRulesDetail {
 		this.specimenType = specimenType;
 	}
 
-	public User getUser() {
-		return user;
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getIpRange() {
@@ -146,5 +152,38 @@ public class PrintRulesDetail {
 
 	public void setLabelTokens(String labelTokens) {
 		this.labelTokens = labelTokens;
+	}
+
+	public static PrintRulesDetail from(PrintRules printRule) {
+		PrintRulesDetail detail = new PrintRulesDetail();
+
+		detail.setId(printRule.getId());
+		detail.setCollectionProtocol(printRule.getCollectionProtocol().getShortTitle());
+		detail.setVisitSite(printRule.getVisitSite().getName());
+		detail.setSpecimenClass(printRule.getSpecimenClass());
+		detail.setSpecimenType(printRule.getSpecimenType().getValue());
+		detail.setUserId(printRule.getUser().getId());
+		detail.setIpRange(printRule.getIpRange());
+		detail.setLabelType(printRule.getLabelType());
+		detail.setLabelDesign(printRule.getLabelDesign());
+		detail.setPrinter(printRule.getPrinter());
+		detail.setCmdFileDir(printRule.getCmdFileDir());
+		detail.setCmdFileFmt(printRule.getCmdFileFmt().toString());
+		detail.setLineage(printRule.getLineage().toString());
+		detail.setLabelTokens(StringUtils.join(getTokens(printRule.getLabelTokens()), ","));
+
+		return detail;
+	}
+
+	public static List<PrintRulesDetail> from(Collection<PrintRules> printRules) {
+		return printRules.stream().map(PrintRulesDetail::from).collect(Collectors.toList());
+	}
+
+	private static List<String> getTokens(Set<PrintLabelTokens> tokens) {
+		List<String> labelTokens = new LinkedList<>();
+		for (PrintLabelTokens pt: tokens) {
+			labelTokens.add(pt.getToken());
+		}
+		return labelTokens;
 	}
 }

@@ -18,7 +18,7 @@
 
     <property name="specimenClass"  column="SPECIMEN_CLASS"/>
 
-    <property name="specimenType" column="SPECIMEN_TYPE"/>
+    <many-to-one name="specimenType" column="SPECIMEN_TYPE"/>
 
     <many-to-one name="user" column="USER_ID"/>
 
@@ -32,9 +32,19 @@
 
     <property name="cmdFileDir" column="CMD_FILE_DIR"/>
 
-    <property name="cmdFileFmt" column="CMD_FILE_FMT"/>
+    <property name="cmdFileFmt" column="CMD_FILE_FMT" not-null="true">
+      <type name="org.hibernate.type.EnumType">
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRules$CmdFileFmt</param>
+        <param name="type">12</param>
+      </type>
+    </property>
 
-    <property name="lineage" column="LINEAGE"/>
+    <property name="lineage" column="LINEAGE" not-null="true">
+      <type name="org.hibernate.type.EnumType">
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRules$Lineage</param>
+        <param name="type">12</param>
+      </type>
+    </property>
 
     <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS" inverse="true" cascade="all-delete-orphan">
       <key column="RULE_ID"/>
