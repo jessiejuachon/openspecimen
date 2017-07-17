@@ -39,6 +39,7 @@ import com.krishagni.catissueplus.core.common.domain.ConfigErrorCode;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
+import com.krishagni.catissueplus.core.common.errors.ErrorType;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.ConfigSettingDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
@@ -111,7 +112,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 				settings = daoFactory.getConfigSettingDao().getAllSettingsByModule(module, level, AuthUtil.getCurrentUser().getId());
 			}
 		}
-		
 		return ResponseEvent.response(ConfigSettingDetail.from(settings));
 	}
 
@@ -132,47 +132,42 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 	@PlusTransactional
 	public ResponseEvent<ConfigSettingDetail> saveSetting(RequestEvent<ConfigSettingDetail> req) {
 		ConfigSettingDetail detail = req.getPayload();
-		String level = detail.getLevel();
+		ConfigSetting existing = null;
+		boolean successful = false;
+		String prop = detail.getName();
+		Map<String, ConfigSetting> moduleSettings = null;
 		try {
+			String setting = null;
+			String module = detail.getModule();
+			String level = detail.getLevel();
+			User user = AuthUtil.getCurrentUser();
 			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
 				AccessCtrlMgr.getInstance().ensureUserIsAdmin();
+				existing = getSystemSetting(detail);
 			} else if (level.equals(ConfigProperty.Level.USER.name())) {
-				User user = AuthUtil.getCurrentUser();
 				if (!user.isAdmin() && user.getId() != detail.getObjectId()) {
 					throw OpenSpecimenException.userError(RbacErrorCode.ACCESS_DENIED);
 				}
-			}
-		} catch (OpenSpecimenException ose) {
-			return ResponseEvent.error(ose);
-		}
 
-		String module = detail.getModule();
-		Map<String, ConfigSetting> moduleSettings = systemSettings.get(module);
-		if (moduleSettings == null || moduleSettings.isEmpty()) {
-			return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-		}
-		
-		String prop = detail.getName();
-		ConfigSetting existing = moduleSettings.get(prop);
-		if (existing == null) {
-			return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-		}
-		
-		String setting = detail.getValue();
-		if (!isValidSetting(existing.getProperty(), setting)) {
-			return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
-		}
-		
-		boolean successful = false;
-		try {
-			ConfigSetting newSetting = createSetting(existing, setting);
+				existing = getUserSetting(detail);
+			}
+
+			setting = detail.getValue();
+			if (!isValidSetting(existing.getProperty(), setting)) {
+				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
+			}
+
+			ConfigSetting newSetting  = createSetting(existing, setting);
 			existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
 
 			daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
-			moduleSettings.put(prop, newSetting);
-			
-			notifyListeners(module, prop, setting);
+			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
+				moduleSettings = systemSettings.get(detail.getModule());
+				moduleSettings.put(prop, newSetting);
+				notifyListeners(module, prop, setting);
+			}
+
 			successful = true;
 			return ResponseEvent.response(ConfigSettingDetail.from(newSetting));
 		} catch (OpenSpecimenException ose) {
@@ -183,10 +178,32 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			if (successful) {
 				deleteOldSettingFile(existing);
 			} else {
-				existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-				moduleSettings.put(prop, existing);
+				if (existing != null) {
+					existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
+					moduleSettings.put(prop, existing);
+				}
 			}
 		}
+	}
+
+	private ConfigSetting getSystemSetting(ConfigSettingDetail detail) {
+		Map<String, ConfigSetting> moduleSettings = systemSettings.get(detail.getModule());
+		if (moduleSettings == null || moduleSettings.isEmpty()) {
+			throw OpenSpecimenException.userError(ConfigErrorCode.MODULE_NOT_FOUND);
+		}
+
+		ConfigSetting existing = moduleSettings.get(detail.getName());
+		if (existing == null) {
+			throw OpenSpecimenException.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+		}
+		return existing;
+	}
+
+	private ConfigSetting getUserSetting(ConfigSettingDetail detail) {
+		User user = AuthUtil.getCurrentUser();
+		ConfigSetting existing = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(detail.getModule(), detail.getName(),
+		ConfigProperty.Level.USER.name(), user.getId());
+		return existing;
 	}
 
 	@Override

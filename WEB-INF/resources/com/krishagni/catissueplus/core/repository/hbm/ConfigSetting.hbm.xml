@@ -72,6 +72,6 @@
         cs.level = :level and
         ((:objectId is null and cs.objectId is null) or cs.objectId = :objectId) and
         cs.activityStatus = 'Active'
-	</query>
+    </query>
   </class>
 </hibernate-mapping>

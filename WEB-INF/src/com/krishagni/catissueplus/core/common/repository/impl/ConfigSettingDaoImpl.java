@@ -78,7 +78,7 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_SETTING_BY_MODULE_PROP)
 			.setParameter("moduleName", moduleName)
 			.setParameter("propName", propName)
-			.setParameter("level", level)
+			.setString("level", level)
 			.setParameter("objectId", objectId)
 			.uniqueResult();
 	}
