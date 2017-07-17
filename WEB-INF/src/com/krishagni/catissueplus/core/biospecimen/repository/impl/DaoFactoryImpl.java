@@ -53,11 +53,13 @@ import com.krishagni.catissueplus.core.biospecimen.repository.StagedParticipantD
 import com.krishagni.catissueplus.core.biospecimen.repository.VisitsDao;
 import com.krishagni.catissueplus.core.common.repository.AbstractDao;
 import com.krishagni.catissueplus.core.common.repository.ConfigSettingDao;
+import com.krishagni.catissueplus.core.common.repository.PrintRuleDao;
 import com.krishagni.catissueplus.core.common.repository.UserNotificationDao;
 import com.krishagni.catissueplus.core.common.repository.UnhandledExceptionDao;
 import com.krishagni.catissueplus.core.common.repository.UniqueIdGenerator;
 import com.krishagni.catissueplus.core.common.repository.UpgradeLogDao;
 import com.krishagni.catissueplus.core.common.repository.impl.ConfigSettingDaoImpl;
+import com.krishagni.catissueplus.core.common.repository.impl.PrintRuleDaoImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UserNotificationDaoImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UnhandledExceptionDaoImpl;
 import com.krishagni.catissueplus.core.common.repository.impl.UniqueIdGeneratorImpl;
@@ -320,6 +322,13 @@ public class DaoFactoryImpl implements DaoFactory {
 	@Override
 	public UserNotificationDao getUserNotificationDao() {
 		UserNotificationDaoImpl dao = new UserNotificationDaoImpl();
+		setSessionFactory(dao);
+		return dao;
+	}
+
+	@Override
+	public PrintRuleDao getPrintRuleDao() {
+		PrintRuleDaoImpl dao = new PrintRuleDaoImpl();
 		setSessionFactory(dao);
 		return dao;
 	}
