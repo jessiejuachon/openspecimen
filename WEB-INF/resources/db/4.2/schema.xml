@@ -159,7 +159,7 @@
         <constraints nullable="false"/>
       </column>
 
-      <column name="SPECIMEN_CLASS" type="${text.type}(32)">
+      <column name="SPECIMEN_CLASS" type="${int.type}">
         <constraints nullable="false"/>
       </column>
 
@@ -217,6 +217,12 @@
       referencedTableName="CATISSUE_SITE" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
+  <changeSet author="agosavi" id="FK on specimen class in print rules">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_SPMN_CLASS"
+      baseTableName="OS_PRINT_RULES" baseColumnNames="SPECIMEN_CLASS"
+      referencedTableName="CATISSUE_PERMISSIBLE_VALUE" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
   <changeSet author="agosavi" id="FK on specimen type in print rules">
     <addForeignKeyConstraint constraintName="FK_PRINT_RULES_SPMN_TYPE"
       baseTableName="OS_PRINT_RULES" baseColumnNames="SPECIMEN_TYPE"
@@ -231,10 +237,6 @@
 
   <changeSet author="agosavi" id="print label tokens table">
     <createTable tableName="OS_PRINT_LABEL_TOKENS">
-      <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-
       <column name="RULE_ID" type="${int.type}">
         <constraints nullable="false"/>
       </column>
@@ -243,10 +245,6 @@
         <constraints nullable="false"/>
       </column>
     </createTable>
-  </changeSet>
-
-  <changeSet author="agosavi" id="print label tokens sequence" dbms="oracle">
-    <createSequence sequenceName="OS_PRINT_LABEL_TOKENS_SEQ" startValue="1" incrementBy="1" ordered="true" />
   </changeSet>
 
   <changeSet author="agosavi" id="FK on print rule id in print label tokens">

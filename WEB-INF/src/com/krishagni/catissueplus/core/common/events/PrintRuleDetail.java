@@ -1,22 +1,25 @@
 package com.krishagni.catissueplus.core.common.events;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import com.krishagni.catissueplus.core.common.domain.PrintLabelTokens;
-import com.krishagni.catissueplus.core.common.domain.PrintRules;
+import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
+import com.krishagni.catissueplus.core.common.domain.PrintRule;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class PrintRulesDetail {
+public class PrintRuleDetail {
 	private Long id;
 
-	private String collectionProtocol;
+	private Long cpId;
+
+	private String cpTitle;
+
+	private String cpShortTitle;
 
 	private String visitSite;
 
@@ -24,7 +27,7 @@ public class PrintRulesDetail {
 
 	private String specimenType;
 
-	private Long userId;
+	private UserSummary userSummary;
 
 	private String ipRange;
 
@@ -40,7 +43,7 @@ public class PrintRulesDetail {
 
 	private String lineage;
 
-	private String labelTokens;
+	private Set<String> labelTokens = new HashSet<>();
 
 	public Long getId() {
 		return id;
@@ -50,12 +53,28 @@ public class PrintRulesDetail {
 		this.id = id;
 	}
 
-	public String getCollectionProtocol() {
-		return collectionProtocol;
+	public Long getCpId() {
+		return cpId;
 	}
 
-	public void setCollectionProtocol(String collectionProtocol) {
-		this.collectionProtocol = collectionProtocol;
+	public void setCpId(Long cpId) {
+		this.cpId = cpId;
+	}
+
+	public String getCpTitle() {
+		return cpTitle;
+	}
+
+	public void setCpTitle(String cpTitle) {
+		this.cpTitle = cpTitle;
+	}
+
+	public String getCpShortTitle() {
+		return cpShortTitle;
+	}
+
+	public void setCpShortTitle(String cpShortTitle) {
+		this.cpShortTitle = cpShortTitle;
 	}
 
 	public String getVisitSite() {
@@ -82,12 +101,12 @@ public class PrintRulesDetail {
 		this.specimenType = specimenType;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public UserSummary getUserSummary() {
+		return userSummary;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setUserSummary(UserSummary userSummary) {
+		this.userSummary = userSummary;
 	}
 
 	public String getIpRange() {
@@ -146,23 +165,26 @@ public class PrintRulesDetail {
 		this.lineage = lineage;
 	}
 
-	public String getLabelTokens() {
+	public Set<String> getLabelTokens() {
 		return labelTokens;
 	}
 
-	public void setLabelTokens(String labelTokens) {
+	public void setLabelTokens(Set<String> labelTokens) {
 		this.labelTokens = labelTokens;
 	}
 
-	public static PrintRulesDetail from(PrintRules printRule) {
-		PrintRulesDetail detail = new PrintRulesDetail();
+	public static PrintRuleDetail from(PrintRule printRule) {
+		PrintRuleDetail detail = new PrintRuleDetail();
+		CollectionProtocol cp = printRule.getCollectionProtocol();
 
 		detail.setId(printRule.getId());
-		detail.setCollectionProtocol(printRule.getCollectionProtocol().getShortTitle());
+		detail.setCpId(cp.getId());
+		detail.setCpTitle(cp.getTitle());
+		detail.setCpShortTitle(cp.getShortTitle());
 		detail.setVisitSite(printRule.getVisitSite().getName());
-		detail.setSpecimenClass(printRule.getSpecimenClass());
+		detail.setSpecimenClass(printRule.getSpecimenClass().getValue());
 		detail.setSpecimenType(printRule.getSpecimenType().getValue());
-		detail.setUserId(printRule.getUser().getId());
+		detail.setUserSummary(UserSummary.from(printRule.getUser()));
 		detail.setIpRange(printRule.getIpRange());
 		detail.setLabelType(printRule.getLabelType());
 		detail.setLabelDesign(printRule.getLabelDesign());
@@ -170,20 +192,11 @@ public class PrintRulesDetail {
 		detail.setCmdFileDir(printRule.getCmdFileDir());
 		detail.setCmdFileFmt(printRule.getCmdFileFmt().toString());
 		detail.setLineage(printRule.getLineage().toString());
-		detail.setLabelTokens(StringUtils.join(getTokens(printRule.getLabelTokens()), ","));
-
+		detail.setLabelTokens(printRule.getLabelTokens());
 		return detail;
 	}
 
-	public static List<PrintRulesDetail> from(Collection<PrintRules> printRules) {
-		return printRules.stream().map(PrintRulesDetail::from).collect(Collectors.toList());
-	}
-
-	private static List<String> getTokens(Set<PrintLabelTokens> tokens) {
-		List<String> labelTokens = new LinkedList<>();
-		for (PrintLabelTokens pt: tokens) {
-			labelTokens.add(pt.getToken());
-		}
-		return labelTokens;
+	public static List<PrintRuleDetail> from(Collection<PrintRule> printRules) {
+		return printRules.stream().map(PrintRuleDetail::from).collect(Collectors.toList());
 	}
 }

@@ -4,7 +4,7 @@
   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping auto-import="false">
-  <class name="com.krishagni.catissueplus.core.common.domain.PrintRules" table="OS_PRINT_RULES">
+  <class name="com.krishagni.catissueplus.core.common.domain.PrintRule" table="OS_PRINT_RULES">
 
     <id name="id" column="IDENTIFIER">
       <generator class="native">
@@ -16,7 +16,7 @@
 
     <many-to-one name="visitSite" column="VISIT_SITE_ID"/>
 
-    <property name="specimenClass"  column="SPECIMEN_CLASS"/>
+    <many-to-one name="specimenClass"  column="SPECIMEN_CLASS"/>
 
     <many-to-one name="specimenType" column="SPECIMEN_TYPE"/>
 
@@ -34,21 +34,21 @@
 
     <property name="cmdFileFmt" column="CMD_FILE_FMT" not-null="true">
       <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRules$CmdFileFmt</param>
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$CmdFileFmt</param>
         <param name="type">12</param>
       </type>
     </property>
 
     <property name="lineage" column="LINEAGE" not-null="true">
       <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRules$Lineage</param>
+        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$Lineage</param>
         <param name="type">12</param>
       </type>
     </property>
 
-    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS" inverse="true" cascade="all-delete-orphan">
+    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS" inverse="true" cascade="all-delete-orphan" lazy="false">
       <key column="RULE_ID"/>
-      <one-to-many class="com.krishagni.catissueplus.core.common.domain.PrintLabelTokens"/>
+      <element column="TOKEN" type="string" not-null="true"/>
     </set>
   </class>
 </hibernate-mapping>

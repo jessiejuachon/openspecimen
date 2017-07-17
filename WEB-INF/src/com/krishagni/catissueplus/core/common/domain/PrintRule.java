@@ -9,7 +9,7 @@ import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.BaseEntity;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 
-public class PrintRules extends BaseEntity {
+public class PrintRule extends BaseEntity {
 	public enum CmdFileFmt {
 		CSV("csv"),
 		KEY_VALUE("key-value");
@@ -41,7 +41,7 @@ public class PrintRules extends BaseEntity {
 
 	private Site visitSite;
 
-	private String specimenClass;
+	private PermissibleValue specimenClass;
 
 	private PermissibleValue specimenType;
 
@@ -61,7 +61,7 @@ public class PrintRules extends BaseEntity {
 
 	private Lineage lineage;
 
-	private Set<PrintLabelTokens> labelTokens = new HashSet<>();
+	private Set<String> labelTokens = new HashSet<>();
 
 	public CollectionProtocol getCollectionProtocol() {
 		return collectionProtocol;
@@ -79,11 +79,11 @@ public class PrintRules extends BaseEntity {
 		this.visitSite = visitSite;
 	}
 
-	public String getSpecimenClass() {
+	public PermissibleValue getSpecimenClass() {
 		return specimenClass;
 	}
 
-	public void setSpecimenClass(String specimenClass) {
+	public void setSpecimenClass(PermissibleValue specimenClass) {
 		this.specimenClass = specimenClass;
 	}
 
@@ -159,11 +159,11 @@ public class PrintRules extends BaseEntity {
 		this.lineage = lineage;
 	}
 
-	public Set<PrintLabelTokens> getLabelTokens() {
+	public Set<String> getLabelTokens() {
 		return labelTokens;
 	}
 
-	public void setLabelTokens(Set<PrintLabelTokens> labelTokens) {
+	public void setLabelTokens(Set<String> labelTokens) {
 		this.labelTokens = labelTokens;
 	}
 }
