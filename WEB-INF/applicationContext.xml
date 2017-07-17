@@ -118,7 +118,6 @@
   <bean id="rbacSvc" class="com.krishagni.rbac.service.impl.RbacServiceImpl">
     <property name="daoFactory" ref="rbacDaoFactory"/>
     <property name="userDao" ref="userDao"/>
-    <property name="emailService" ref="emailService"/>
   </bean>
 	
   <bean id="extnPvLabelToken" class="com.krishagni.catissueplus.core.common.domain.ExtensionPvAttrLabelToken">
@@ -760,6 +759,12 @@
     <property name="daoFactory" ref="deDaoFactory"/>
     <property name="deInitializer" ref="deInitializer"/>
     <property name="templateService" ref="templateService"/>
+  </bean>
+
+  <bean id="importContainerTypes" class="com.krishagni.catissueplus.core.init.ImportContainerTypes">
+    <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    <property name="daoFactory" ref="biospecimenDaoFactory"/>
+    <property name="containerTypeSvc" ref="containerTypeSvc"/>
   </bean>
 
   <!-- Move these to importer-beans.xml -->
