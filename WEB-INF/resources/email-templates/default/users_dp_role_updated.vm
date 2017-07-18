@@ -1,0 +1,105 @@
+<table cellspacing="0" cellpadding="0" border="0" width="100%" style="border-spacing:0;border-collapse:separate">
+  <tbody>
+    <tr>
+      <td style="border-collapse:collapse;">
+        <table cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;line-height:20px">
+          <tbody>
+            <tr>
+              <td style="padding:0px;border-collapse:collapse;padding:0px;padding-bottom:10px">
+                <p style="margin:10px 0 0 0">
+                  Hello Admin,
+                  <br><br>
+                  You are receiving this email because you are assigned as the PI, Coordinator, Distributing Site or Receiving Site of the below Distribution Protocol.
+                  <br><br>
+                  A brief description of the Distribution Protocol is given below:
+                  <br>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table>
+                  <tr>
+                    <td> Title </td>
+                    <td> : $dp.title </td>
+                  </tr>
+                  <tr>
+                    <td> Short Title </td>
+                    <td> : $dp.shortTitle </td>
+                  </tr>
+                  <tr>
+                    <td> PI Name </td>
+                    <td> : $dp.principalInvestigator.firstName $dp.principalInvestigator.lastName </td>
+                  </tr>
+                  #set( $size = $dp.coordinators.size() )
+                  #if ($size > 0)
+                    <tr>
+                      <td> Coordinators </td>
+                      <td> :
+                        #set( $size1 = 0 )
+                        #foreach( $user in $dp.coordinators )
+                          $user.firstName $user.lastName
+                          #set($size1 = $size1 + 1)
+                          #if ($size > $size1)
+                            ,
+                          #end
+                        #end
+                      </td>
+                    </tr>
+                  #end
+                  <tr>
+                    <td> Receiving site </td>
+                    <td> : $dp.defReceivingSite.name </td>
+                  </tr>
+                  <tr>
+                    <td> Receiving institute </td>
+                    <td> : $dp.institute.name </td>
+                  </tr>
+                  <tr>
+                    <td style="border-collapse:collapse;padding:0px;padding-bottom:10px">
+                      <tr>
+                        <th align="left" style="solid #e3e3e3;">Distributing sites</th>
+                      </tr>
+                      <tr>
+                        <th align="left" style="border-bottom:1px solid #e3e3e3;">Institute</th>
+                        <th align="left" style="border-bottom:1px solid #e3e3e3;">Sites</th>
+                      </tr>
+                      #foreach( $instSiteMap in $instSitesMap.keySet() )
+                        <tr>
+                          <td> $instSiteMap </td>
+                          <td>
+                            #set( $size = $instSitesMap.get($instSiteMap).size() )
+                            #if ($size > 0)
+                              #set( $size1 = 0 )
+                              #foreach( $site in $instSitesMap.get($instSiteMap) )
+                                $site
+                                #set($size1 = $size1 + 1)
+                                #if ($size > $size1)
+                                  ,
+                                #end
+                              #end
+                            #else
+                              All current and future sites
+                            #end
+                          </td>
+                        </tr>
+                      #end
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="height:5px;line-height:5px;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td>
+        #parse( $footer )
+      </td>
+    </tr>
+  </tbody>
+</table>

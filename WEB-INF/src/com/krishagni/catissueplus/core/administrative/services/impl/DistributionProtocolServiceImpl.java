@@ -11,12 +11,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.krishagni.catissueplus.core.administrative.domain.User;
+import com.krishagni.catissueplus.core.administrative.domain.DpDistributionSite;
 import com.krishagni.catissueplus.core.administrative.domain.DistributionProtocol;
 import com.krishagni.catissueplus.core.administrative.domain.DpConsentTier;
 import com.krishagni.catissueplus.core.administrative.domain.DpRequirement;
@@ -32,6 +36,7 @@ import com.krishagni.catissueplus.core.administrative.events.DpRequirementDetail
 import com.krishagni.catissueplus.core.administrative.events.DprStat;
 import com.krishagni.catissueplus.core.administrative.repository.DpListCriteria;
 import com.krishagni.catissueplus.core.administrative.repository.DpRequirementDao;
+import com.krishagni.catissueplus.core.administrative.repository.UserListCriteria;
 import com.krishagni.catissueplus.core.administrative.services.DistributionProtocolService;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 import com.krishagni.catissueplus.core.biospecimen.domain.ConsentStatement;
@@ -54,6 +59,7 @@ import com.krishagni.catissueplus.core.common.util.CsvWriter;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
+import com.krishagni.catissueplus.core.common.util.EmailUtil;
 import com.krishagni.catissueplus.core.de.services.FormService;
 import com.krishagni.rbac.common.errors.RbacErrorCode;
 
@@ -162,6 +168,7 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 			
 			daoFactory.getDistributionProtocolDao().saveOrUpdate(dp);
 			dp.addOrUpdateExtension();
+			sendEmail(dp);
 			return ResponseEvent.response(DistributionProtocolDetail.from(dp));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -781,4 +788,38 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 			throw OpenSpecimenException.userError(DistributionProtocolErrorCode.DUP_CONSENT, tier.getStatement().getCode(), dp.getShortTitle());
 		}
 	}
+
+	private void sendEmail(DistributionProtocol dp) {
+		Map<String, Object> props = new HashMap<>();
+		props.put("dp", dp);
+		props.put("instSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
+
+		EmailUtil.getInstance().sendEmail(ROLE_UPDATED_EMAIL_TMPL, getEmailAddresses(dp), null, props);
+	}
+
+	private String[] getEmailAddresses(DistributionProtocol dp) {
+		UserListCriteria crit = new UserListCriteria()
+			.activityStatus("Active")
+			.type("INSTITUTE")
+			.instituteName(dp.getInstitute().getName());
+
+		List<String> emailAddresses = new ArrayList<>();
+		emailAddresses.addAll(getEmailFromUsers(daoFactory.getUserDao().getUsers(crit)));
+		emailAddresses.addAll(getEmailFromUsers(dp.getDefReceivingSite().getCoordinators()));
+		emailAddresses.add(dp.getPrincipalInvestigator().getEmailAddress());
+		emailAddresses.addAll(getEmailFromUsers(dp.getCoordinators()));
+		emailAddresses.addAll(dp.getDistributingSites().stream()
+			.map(DpDistributionSite::getSite)
+			.filter(s -> s != null)
+			.flatMap(site -> site.getCoordinators().stream())
+			.map(User::getEmailAddress).collect(Collectors.toList()));
+
+		return emailAddresses.toArray(new String[emailAddresses.size()]);
+	}
+
+	private List<String> getEmailFromUsers(Collection<User> users) {
+		return users.stream().map(User::getEmailAddress).collect(Collectors.toList());
+	}
+
+	private static final String ROLE_UPDATED_EMAIL_TMPL = "users_dp_role_updated";
 }
