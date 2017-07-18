@@ -31,16 +31,16 @@
                     <td> PI Name </td>
                     <td> : $dp.principalInvestigator.firstName $dp.principalInvestigator.lastName </td>
                   </tr>
-                  #set( $size = $dp.coordinators.size() )
-                  #if ($size > 0)
+                  #set( $coordinatorsLength = $dp.coordinators.size() )
+                  #if ($coordinatorsLength > 0)
                     <tr>
                       <td> Coordinators </td>
                       <td> :
-                        #set( $size1 = 0 )
+                        #set( $length = 0 )
                         #foreach( $user in $dp.coordinators )
                           $user.firstName $user.lastName
-                          #set($size1 = $size1 + 1)
-                          #if ($size > $size1)
+                          #set($length = $length + 1)
+                          #if ($coordinatorsLength > $length)
                             ,
                           #end
                         #end
@@ -68,13 +68,13 @@
                         <tr>
                           <td> $instSiteMap </td>
                           <td>
-                            #set( $size = $instSitesMap.get($instSiteMap).size() )
-                            #if ($size > 0)
-                              #set( $size1 = 0 )
+                            #set( $sitesLength = $instSitesMap.get($instSiteMap).size() )
+                            #if ($sitesLength > 0)
+                              #set( $length = 0 )
                               #foreach( $site in $instSitesMap.get($instSiteMap) )
                                 $site
-                                #set($size1 = $size1 + 1)
-                                #if ($size > $size1)
+                                #set($length = $length + 1)
+                                #if ($sitesLength > $length)
                                   ,
                                 #end
                               #end
