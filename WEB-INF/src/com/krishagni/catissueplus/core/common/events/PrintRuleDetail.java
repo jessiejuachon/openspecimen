@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
@@ -178,20 +179,23 @@ public class PrintRuleDetail {
 		CollectionProtocol cp = printRule.getCollectionProtocol();
 
 		detail.setId(printRule.getId());
-		detail.setCpId(cp.getId());
-		detail.setCpTitle(cp.getTitle());
-		detail.setCpShortTitle(cp.getShortTitle());
-		detail.setVisitSite(printRule.getVisitSite().getName());
-		detail.setSpecimenClass(printRule.getSpecimenClass().getValue());
-		detail.setSpecimenType(printRule.getSpecimenType().getValue());
-		detail.setUserSummary(UserSummary.from(printRule.getUser()));
+		if (cp != null) {
+			detail.setCpId(cp.getId());
+			detail.setCpTitle(cp.getTitle());
+			detail.setCpShortTitle(cp.getShortTitle());
+		}
+
+		detail.setVisitSite(printRule.getVisitSite() != null ? printRule.getVisitSite().getName() : null);
+		detail.setSpecimenClass(String.valueOf(printRule.getSpecimenClass()));
+		detail.setSpecimenType(String.valueOf(printRule.getSpecimenType()));
+		detail.setUserSummary(printRule.getUser() != null ? UserSummary.from(printRule.getUser()) : null);
 		detail.setIpRange(printRule.getIpRange());
 		detail.setLabelType(printRule.getLabelType());
 		detail.setLabelDesign(printRule.getLabelDesign());
 		detail.setPrinter(printRule.getPrinter());
 		detail.setCmdFileDir(printRule.getCmdFileDir());
-		detail.setCmdFileFmt(printRule.getCmdFileFmt().toString());
-		detail.setLineage(printRule.getLineage().toString());
+		detail.setCmdFileFmt(printRule.getCmdFileFmt() != null ? printRule.getCmdFileFmt().name() : null);
+		detail.setLineage(printRule.getLineage() != null ? printRule.getLineage().name() : null);
 		detail.setLabelTokens(printRule.getLabelTokens());
 		return detail;
 	}

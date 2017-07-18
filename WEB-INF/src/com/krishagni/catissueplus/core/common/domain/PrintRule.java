@@ -11,24 +11,9 @@ import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 
 public class PrintRule extends BaseEntity {
 	public enum CmdFileFmt {
-		CSV("csv"),
-		KEY_VALUE("key-value");
+		CSV,
+		KEY_VALUE;
 
-		private String fmt;
-
-		private CmdFileFmt(String fmt) {
-			this.fmt = fmt;
-		}
-
-		public static CmdFileFmt get(String input) {
-			for (CmdFileFmt cfFmt : values()) {
-				if (cfFmt.fmt.equals(input)) {
-					return cfFmt;
-				}
-			}
-
-			return null;
-		}
 	};
 
 	public enum Lineage {

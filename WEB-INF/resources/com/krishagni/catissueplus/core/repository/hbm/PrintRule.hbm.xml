@@ -32,21 +32,21 @@
 
     <property name="cmdFileDir" column="CMD_FILE_DIR"/>
 
-    <property name="cmdFileFmt" column="CMD_FILE_FMT" not-null="true">
+    <property name="cmdFileFmt" column="CMD_FILE_FMT">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$CmdFileFmt</param>
         <param name="type">12</param>
       </type>
     </property>
 
-    <property name="lineage" column="LINEAGE" not-null="true">
+    <property name="lineage" column="LINEAGE">
       <type name="org.hibernate.type.EnumType">
         <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$Lineage</param>
         <param name="type">12</param>
       </type>
     </property>
 
-    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS" lazy="false">
+    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS"  cascade="all-delete-orphan"  lazy="false">
       <key column="RULE_ID"/>
       <element column="TOKEN" type="string" not-null="true"/>
     </set>

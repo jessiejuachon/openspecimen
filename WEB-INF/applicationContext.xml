@@ -1089,10 +1089,10 @@
 
   <bean id="printRuleSvc" class="com.krishagni.catissueplus.core.common.service.impl.PrintRuleServiceImpl">
     <property name="daoFactory" ref="biospecimenDaoFactory"/>
-    <property name="printRuleFactory" ref="printRuleFact"/>
+    <property name="printRuleFactory" ref="printRuleFactory"/>
   </bean>
 
-  <bean id="printRuleFact" class="com.krishagni.catissueplus.core.common.domain.factory.PrintRuleFactory">
+  <bean id="printRuleFactory" class="com.krishagni.catissueplus.core.common.domain.factory.PrintRuleFactory">
     <property name="daoFactory" ref="biospecimenDaoFactory"/>
   </bean>
 

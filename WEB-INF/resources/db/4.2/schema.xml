@@ -151,53 +151,31 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
 
-      <column name="CP_ID" type="${int.type}">
-        <constraints nullable="false"/>
-      </column>
+      <column name="CP_ID" type="${int.type}"/>
 
-      <column name="VISIT_SITE_ID" type="${int.type}">
-        <constraints nullable="false"/>
-      </column>
+      <column name="VISIT_SITE_ID" type="${int.type}"/>
 
-      <column name="SPECIMEN_CLASS" type="${int.type}">
-        <constraints nullable="false"/>
-      </column>
+      <column name="SPECIMEN_CLASS" type="${int.type}"/>
 
-      <column name="SPECIMEN_TYPE" type="${int.type}">
-        <constraints nullable="false"/>
-      </column>
+      <column name="SPECIMEN_TYPE" type="${int.type}"/>
 
-      <column name="USER_ID" type="${int.type}">
-        <constraints nullable="false"/>
-      </column>
+      <column name="USER_ID" type="${int.type}"/>
 
-      <column name="IP_RANGE" type="${text.type}(64)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="IP_RANGE" type="${text.type}(64)"/>
 
-      <column name="LABEL_TYPE" type="${text.type}(32)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="LABEL_TYPE" type="${text.type}(32)"/>
 
-      <column name="LABEL_DESIGN" type="${text.type}(32)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="LABEL_DESIGN" type="${text.type}(32)"/>
 
-      <column name="PRINTER" type="${text.type}(128)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="PRINTER" type="${text.type}(128)"/>
 
       <column name="CMD_FILE_DIR" type="${text.type}(255)">
         <constraints nullable="false"/>
       </column>
 
-      <column name="CMD_FILE_FMT" type="${text.type}(32)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="CMD_FILE_FMT" type="${text.type}(32)"/>
 
-      <column name="LINEAGE" type="${text.type}(32)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="LINEAGE" type="${text.type}(32)"/>
     </createTable>
   </changeSet>
 
@@ -205,31 +183,31 @@
     <createSequence sequenceName="OS_PRINT_RULES_SEQ" startValue="1" incrementBy="1" ordered="true" />
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on CP in print rules">
-    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_CP_ID"
+  <changeSet author="agosavi" id="Add EK on print rule’s collection protocol">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULE_CP_ID"
       baseTableName="OS_PRINT_RULES" baseColumnNames="CP_ID"
       referencedTableName="CATISSUE_COLLECTION_PROTOCOL" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on visit site in print rules">
-    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_VISITE_SITE_ID"
+  <changeSet author="agosavi" id="Add FK on print rule’s visit site">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULE_VISITE_SITE_ID"
       baseTableName="OS_PRINT_RULES" baseColumnNames="VISIT_SITE_ID"
       referencedTableName="CATISSUE_SITE" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on specimen class in print rules">
-    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_SPMN_CLASS"
+  <changeSet author="agosavi" id="Add FK on print rule’s specimen class">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULE_SPMN_CLASS"
       baseTableName="OS_PRINT_RULES" baseColumnNames="SPECIMEN_CLASS"
       referencedTableName="CATISSUE_PERMISSIBLE_VALUE" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on specimen type in print rules">
-    <addForeignKeyConstraint constraintName="FK_PRINT_RULES_SPMN_TYPE"
+  <changeSet author="agosavi" id="Add FK on print rule’s specimen type">
+    <addForeignKeyConstraint constraintName="FK_PRINT_RULE_SPMN_TYPE"
       baseTableName="OS_PRINT_RULES" baseColumnNames="SPECIMEN_TYPE"
       referencedTableName="CATISSUE_PERMISSIBLE_VALUE" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on user id in print rules">
+  <changeSet author="agosavi" id="Add FK on print rule’s user id">
     <addForeignKeyConstraint constraintName="FK_PRINT_RULES_USER_ID"
       baseTableName="OS_PRINT_RULES" baseColumnNames="USER_ID"
       referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
@@ -247,8 +225,8 @@
     </createTable>
   </changeSet>
 
-  <changeSet author="agosavi" id="FK on print rule id in print label tokens">
-    <addForeignKeyConstraint constraintName="FK_PRINT_LABEL_TOKENS_RULE_ID"
+  <changeSet author="agosavi" id="Add FK on print label token's print rule id">
+    <addForeignKeyConstraint constraintName="FK_LABEL_TOKENS_RULE_ID"
       baseTableName="OS_PRINT_LABEL_TOKENS" baseColumnNames="RULE_ID"
       referencedTableName="OS_PRINT_RULES" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
