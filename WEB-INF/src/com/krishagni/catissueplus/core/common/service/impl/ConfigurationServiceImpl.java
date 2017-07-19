@@ -37,6 +37,7 @@ import com.krishagni.catissueplus.core.common.PlusTransactional;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr;
 import com.krishagni.catissueplus.core.common.domain.ConfigErrorCode;
 import com.krishagni.catissueplus.core.common.domain.ConfigProperty;
+import com.krishagni.catissueplus.core.common.domain.ConfigProperty.Level;
 import com.krishagni.catissueplus.core.common.domain.ConfigSetting;
 import com.krishagni.catissueplus.core.common.domain.Module;
 import com.krishagni.catissueplus.core.common.errors.ErrorType;
@@ -137,19 +138,28 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		String prop = detail.getName();
 		Map<String, ConfigSetting> moduleSettings = null;
 		try {
+			User user = AuthUtil.getCurrentUser();
 			String setting = null;
 			String module = detail.getModule();
 			String level = detail.getLevel();
-			User user = AuthUtil.getCurrentUser();
 			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
 				AccessCtrlMgr.getInstance().ensureUserIsAdmin();
-				existing = getSystemSetting(detail);
-			} else if (level.equals(ConfigProperty.Level.USER.name())) {
-				if (!user.isAdmin() && user.getId() != detail.getObjectId()) {
-					throw OpenSpecimenException.userError(RbacErrorCode.ACCESS_DENIED);
+				moduleSettings = systemSettings.get(detail.getModule());
+				if (moduleSettings == null || moduleSettings.isEmpty()) {
+					return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 				}
 
-				existing = getUserSetting(detail);
+				existing = moduleSettings.get(detail.getName());
+				if (existing == null) {
+					return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+				}
+			} else if (level.equals(ConfigProperty.Level.USER.name())) {
+				if (!user.getId().equals(detail.getObjectId())) {
+					return ResponseEvent.userError(RbacErrorCode.ACCESS_DENIED);
+				}
+
+				existing = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(module, prop,
+					ConfigProperty.Level.USER.name(), user.getId());
 			}
 
 			setting = detail.getValue();
@@ -158,7 +168,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			}
 
 			ConfigSetting newSetting  = createSetting(existing, setting);
-			existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
+			if (existing.getLevel().equals(newSetting.getLevel())) {
+				existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
+			}
 
 			daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
@@ -184,26 +196,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 				}
 			}
 		}
-	}
-
-	private ConfigSetting getSystemSetting(ConfigSettingDetail detail) {
-		Map<String, ConfigSetting> moduleSettings = systemSettings.get(detail.getModule());
-		if (moduleSettings == null || moduleSettings.isEmpty()) {
-			throw OpenSpecimenException.userError(ConfigErrorCode.MODULE_NOT_FOUND);
-		}
-
-		ConfigSetting existing = moduleSettings.get(detail.getName());
-		if (existing == null) {
-			throw OpenSpecimenException.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-		}
-		return existing;
-	}
-
-	private ConfigSetting getUserSetting(ConfigSettingDetail detail) {
-		User user = AuthUtil.getCurrentUser();
-		ConfigSetting existing = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(detail.getModule(), detail.getName(),
-		ConfigProperty.Level.USER.name(), user.getId());
-		return existing;
 	}
 
 	@Override
@@ -548,14 +540,13 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	private ConfigSetting getSetting(String moduleName, String propName) {
 		ConfigSetting setting = null;
-
 		ConfigProperty property = configProps.get(moduleName + ":" + propName);
 		if (property == null) {
 			throw OpenSpecimenException.userError(ConfigErrorCode.SETTING_NOT_FOUND);
 		}
 
 		User currentUser = AuthUtil.getCurrentUser();
-		if (currentUser != null && property.getLevels().contains(ConfigProperty.Level.USER)) {
+		if (currentUser != null && property.getLevels().contains(ConfigProperty.Level.USER.name())) {
 			setting = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(
 				moduleName, propName, ConfigProperty.Level.USER.name(), currentUser.getId());
 		}
