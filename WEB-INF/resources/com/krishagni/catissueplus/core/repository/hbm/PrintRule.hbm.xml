@@ -4,7 +4,7 @@
   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping auto-import="false">
-  <class name="com.krishagni.catissueplus.core.common.domain.PrintRule" table="OS_PRINT_RULES">
+  <class name="com.krishagni.catissueplus.core.biospecimen.domain.PrintRule" table="OS_PRINT_RULES">
 
     <id name="id" column="IDENTIFIER">
       <generator class="native">
@@ -34,17 +34,12 @@
 
     <property name="cmdFileFmt" column="CMD_FILE_FMT">
       <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$CmdFileFmt</param>
+        <param name="enumClass">com.krishagni.catissueplus.core.biospecimen.domain.PrintRule$CmdFileFmt</param>
         <param name="type">12</param>
       </type>
     </property>
 
-    <property name="lineage" column="LINEAGE">
-      <type name="org.hibernate.type.EnumType">
-        <param name="enumClass">com.krishagni.catissueplus.core.common.domain.PrintRule$Lineage</param>
-        <param name="type">12</param>
-      </type>
-    </property>
+    <property name="lineage" column="LINEAGE"/>
 
     <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS"  cascade="all-delete-orphan">
       <key column="RULE_ID"/>

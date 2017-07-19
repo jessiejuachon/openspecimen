@@ -19,7 +19,7 @@ import com.krishagni.catissueplus.core.administrative.repository.UserDao;
 import com.krishagni.catissueplus.core.audit.repository.AuditDao;
 import com.krishagni.catissueplus.core.auth.repository.AuthDao;
 import com.krishagni.catissueplus.core.common.repository.ConfigSettingDao;
-import com.krishagni.catissueplus.core.common.repository.PrintRuleDao;
+import com.krishagni.catissueplus.core.biospecimen.repository.PrintRuleDao;
 import com.krishagni.catissueplus.core.common.repository.UnhandledExceptionDao;
 import com.krishagni.catissueplus.core.common.repository.UniqueIdGenerator;
 import com.krishagni.catissueplus.core.common.repository.UpgradeLogDao;

@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.krishagni.catissueplus.core.common.events.PrintRuleDetail;
+import com.krishagni.catissueplus.core.biospecimen.events.PrintRuleDetail;
+import com.krishagni.catissueplus.core.biospecimen.services.PrintRuleService;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
-import com.krishagni.catissueplus.core.common.service.PrintRuleService;
 
 @Controller
 @RequestMapping("/print-rules")
@@ -24,8 +24,7 @@ public class PrintRuleController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public PrintRuleDetail createPrintRule(@RequestBody PrintRuleDetail detail) {
-		RequestEvent<PrintRuleDetail> req = new RequestEvent<PrintRuleDetail>(detail);
-		ResponseEvent<PrintRuleDetail> resp = printRuleSvc.createPrintRule(req);
+		ResponseEvent<PrintRuleDetail> resp = printRuleSvc.createPrintRule(new RequestEvent<PrintRuleDetail>(detail));
 		resp.throwErrorIfUnsuccessful();
 
 		return resp.getPayload();

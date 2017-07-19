@@ -1,4 +1,4 @@
-package com.krishagni.catissueplus.core.common.domain;
+package com.krishagni.catissueplus.core.biospecimen.domain;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,12 +13,6 @@ public class PrintRule extends BaseEntity {
 	public enum CmdFileFmt {
 		CSV,
 		KEY_VALUE;
-	};
-
-	public enum Lineage {
-		ALIQUOTS,
-		PARENT,
-		DERIVATIVE
 	};
 
 	private CollectionProtocol collectionProtocol;
@@ -43,7 +37,7 @@ public class PrintRule extends BaseEntity {
 
 	private CmdFileFmt cmdFileFmt;
 
-	private Lineage lineage;
+	private String lineage;
 
 	private Set<String> labelTokens = new HashSet<>();
 
@@ -135,11 +129,11 @@ public class PrintRule extends BaseEntity {
 		this.cmdFileFmt = cmdFileFmt;
 	}
 
-	public Lineage getLineage() {
+	public String getLineage() {
 		return lineage;
 	}
 
-	public void setLineage(Lineage lineage) {
+	public void setLineage(String lineage) {
 		this.lineage = lineage;
 	}
 

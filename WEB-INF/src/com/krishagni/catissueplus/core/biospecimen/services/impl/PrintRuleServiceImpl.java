@@ -1,16 +1,15 @@
-package com.krishagni.catissueplus.core.common.service.impl;
+package com.krishagni.catissueplus.core.biospecimen.services.impl;
 
+import com.krishagni.catissueplus.core.biospecimen.domain.PrintRule;
+import com.krishagni.catissueplus.core.biospecimen.domain.factory.PrintRuleFactory;
+import com.krishagni.catissueplus.core.biospecimen.events.PrintRuleDetail;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
+import com.krishagni.catissueplus.core.biospecimen.services.PrintRuleService;
 import com.krishagni.catissueplus.core.common.PlusTransactional;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr;
-import com.krishagni.catissueplus.core.common.domain.PrintRule;
-import com.krishagni.catissueplus.core.common.domain.factory.PrintRuleFactory;
-import com.krishagni.catissueplus.core.common.errors.ErrorType;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
-import com.krishagni.catissueplus.core.common.events.PrintRuleDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
-import com.krishagni.catissueplus.core.common.service.PrintRuleService;
 
 public class PrintRuleServiceImpl implements PrintRuleService {
 	private DaoFactory daoFactory;
@@ -31,13 +30,11 @@ public class PrintRuleServiceImpl implements PrintRuleService {
 		try {
 			AccessCtrlMgr.getInstance().ensureUserIsAdmin();
 			PrintRuleDetail detail = req.getPayload();
-			OpenSpecimenException ose = new OpenSpecimenException(ErrorType.USER_ERROR);
 
-			PrintRule printRule = printRuleFactory.createPrintRule(detail);
-			ose.checkAndThrow();
+			PrintRule rule = printRuleFactory.createPrintRule(detail);
+			daoFactory.getPrintRuleDao().saveOrUpdate(rule);
 
-			daoFactory.getPrintRuleDao().saveOrUpdate(printRule);
-			return ResponseEvent.response(PrintRuleDetail.from(printRule));
+			return ResponseEvent.response(PrintRuleDetail.from(rule));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
 		} catch (Exception e) {

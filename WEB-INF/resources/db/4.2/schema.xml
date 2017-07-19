@@ -145,7 +145,7 @@
       referencedTableName="CATISSUE_SPECIMENLIST_TAGS" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="print rules table">
+  <changeSet author="agosavi" id="Table for print rules">
     <createTable tableName="OS_PRINT_RULES">
       <column name="IDENTIFIER" type="${int.type}" autoIncrement="${autoIncrement}">
         <constraints primaryKey="true" nullable="false"/>
@@ -179,11 +179,11 @@
     </createTable>
   </changeSet>
 
-  <changeSet author="agosavi" id="print rules sequence" dbms="oracle">
+  <changeSet author="agosavi" id="Print rules identifier sequence" dbms="oracle">
     <createSequence sequenceName="OS_PRINT_RULES_SEQ" startValue="1" incrementBy="1" ordered="true" />
   </changeSet>
 
-  <changeSet author="agosavi" id="Add EK on print rule’s collection protocol">
+  <changeSet author="agosavi" id="Add FK on print rule’s collection protocol">
     <addForeignKeyConstraint constraintName="FK_PRINT_RULE_CP_ID"
       baseTableName="OS_PRINT_RULES" baseColumnNames="CP_ID"
       referencedTableName="CATISSUE_COLLECTION_PROTOCOL" referencedColumnNames="IDENTIFIER"/>
@@ -213,7 +213,7 @@
       referencedTableName="CATISSUE_USER" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
-  <changeSet author="agosavi" id="print label tokens table">
+  <changeSet author="agosavi" id="Table for print label tokens">
     <createTable tableName="OS_PRINT_LABEL_TOKENS">
       <column name="RULE_ID" type="${int.type}">
         <constraints nullable="false"/>
@@ -225,7 +225,7 @@
     </createTable>
   </changeSet>
 
-  <changeSet author="agosavi" id="Add FK on print label token's print rule id">
+  <changeSet author="agosavi" id="Add FK on label tokens print rule identifier">
     <addForeignKeyConstraint constraintName="FK_LABEL_TOKENS_RULE_ID"
       baseTableName="OS_PRINT_LABEL_TOKENS" baseColumnNames="RULE_ID"
       referencedTableName="OS_PRINT_RULES" referencedColumnNames="IDENTIFIER"/>

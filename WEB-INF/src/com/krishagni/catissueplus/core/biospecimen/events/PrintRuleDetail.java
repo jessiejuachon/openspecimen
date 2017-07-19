@@ -1,4 +1,4 @@
-package com.krishagni.catissueplus.core.common.events;
+package com.krishagni.catissueplus.core.biospecimen.events;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
-import com.krishagni.catissueplus.core.common.domain.PrintRule;
+import com.krishagni.catissueplus.core.biospecimen.domain.PrintRule;
+import com.krishagni.catissueplus.core.common.events.UserSummary;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class PrintRuleDetail {
@@ -174,33 +174,33 @@ public class PrintRuleDetail {
 		this.labelTokens = labelTokens;
 	}
 
-	public static PrintRuleDetail from(PrintRule printRule) {
+	public static PrintRuleDetail from(PrintRule rule) {
 		PrintRuleDetail detail = new PrintRuleDetail();
-		CollectionProtocol cp = printRule.getCollectionProtocol();
 
-		detail.setId(printRule.getId());
+		CollectionProtocol cp = rule.getCollectionProtocol();
 		if (cp != null) {
 			detail.setCpId(cp.getId());
 			detail.setCpTitle(cp.getTitle());
 			detail.setCpShortTitle(cp.getShortTitle());
 		}
 
-		detail.setVisitSite(printRule.getVisitSite() != null ? printRule.getVisitSite().getName() : null);
-		detail.setSpecimenClass(printRule.getSpecimenClass() != null ? printRule.getSpecimenClass().getValue() : null);
-		detail.setSpecimenType(printRule.getSpecimenType() != null ? printRule.getSpecimenType().getValue() : null);
-		detail.setUserSummary(printRule.getUser() != null ? UserSummary.from(printRule.getUser()) : null);
-		detail.setIpRange(printRule.getIpRange());
-		detail.setLabelType(printRule.getLabelType());
-		detail.setLabelDesign(printRule.getLabelDesign());
-		detail.setPrinter(printRule.getPrinter());
-		detail.setCmdFileDir(printRule.getCmdFileDir());
-		detail.setCmdFileFmt(printRule.getCmdFileFmt() != null ? printRule.getCmdFileFmt().name() : null);
-		detail.setLineage(printRule.getLineage() != null ? printRule.getLineage().name() : null);
-		detail.setLabelTokens(printRule.getLabelTokens());
+		detail.setId(rule.getId());
+		detail.setVisitSite(rule.getVisitSite() != null ? rule.getVisitSite().getName() : null);
+		detail.setSpecimenClass(rule.getSpecimenClass() != null ? rule.getSpecimenClass().getValue() : null);
+		detail.setSpecimenType(rule.getSpecimenType() != null ? rule.getSpecimenType().getValue() : null);
+		detail.setUserSummary(rule.getUser() != null ? UserSummary.from(rule.getUser()) : null);
+		detail.setIpRange(rule.getIpRange());
+		detail.setLabelType(rule.getLabelType());
+		detail.setLabelDesign(rule.getLabelDesign());
+		detail.setPrinter(rule.getPrinter());
+		detail.setCmdFileDir(rule.getCmdFileDir());
+		detail.setCmdFileFmt(rule.getCmdFileFmt() != null ? rule.getCmdFileFmt().name() : null);
+		detail.setLineage(rule.getLineage());
+		detail.setLabelTokens(rule.getLabelTokens());
 		return detail;
 	}
 
-	public static List<PrintRuleDetail> from(Collection<PrintRule> printRules) {
-		return printRules.stream().map(PrintRuleDetail::from).collect(Collectors.toList());
+	public static List<PrintRuleDetail> from(Collection<PrintRule> rules) {
+		return rules.stream().map(PrintRuleDetail::from).collect(Collectors.toList());
 	}
 }
