@@ -26,6 +26,7 @@ import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 import com.krishagni.catissueplus.core.biospecimen.domain.Specimen;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.OpenSpecimenAppCtxProvider;
+import com.krishagni.catissueplus.core.common.PlusTransactional;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.DependentEntityDetail;
@@ -949,6 +950,12 @@ public class StorageContainer extends BaseEntity {
 
 	public void processList(ContainerStoreList list) {
 		getAutoFreezerProvider().getInstance().processList(list);
+		updateListExecution(list);
+	}
+
+	@PlusTransactional
+	public void updateListExecution(ContainerStoreList storeList) {
+		ContainerStoreList list = getDaoFactory().getContainerStoreListDao().getById(storeList.getId());
 		list.setExecutionTime(Calendar.getInstance().getTime());
 	}
 

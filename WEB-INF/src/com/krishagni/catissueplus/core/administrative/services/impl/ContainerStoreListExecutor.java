@@ -2,6 +2,7 @@ package com.krishagni.catissueplus.core.administrative.services.impl;
 
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
@@ -18,18 +19,28 @@ public class ContainerStoreListExecutor implements ScheduledTask {
 	private DaoFactory daoFactory;
 
 	@Override
-	@PlusTransactional
 	public void doJob(ScheduledJobRun jobRun)
 	throws Exception {
 		int maxResults = 15;
 
 		boolean hasPendingLists = true;
 		while (hasPendingLists) {
-			List<ContainerStoreList> storeLists = daoFactory.getContainerStoreListDao().getPendingStoreLists(0, maxResults);
+			List<ContainerStoreList> storeLists = getPendingStoreList(maxResults);
 			storeLists.forEach(ContainerStoreList::process);
 			if (storeLists.size() < maxResults) {
 				hasPendingLists = false;
 			}
 		}
+	}
+
+	@PlusTransactional
+	public List<ContainerStoreList> getPendingStoreList(int maxResults) {
+		List<ContainerStoreList> storeLists = daoFactory.getContainerStoreListDao().getPendingStoreLists(0, maxResults);
+		for (ContainerStoreList list : storeLists) {
+			Hibernate.initialize(list.getContainer());
+			Hibernate.initialize(list.getContainer().getAutoFreezerProvider());
+		}
+
+		return storeLists;
 	}
 }
