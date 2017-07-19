@@ -46,7 +46,7 @@
       </type>
     </property>
 
-    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS"  cascade="all-delete-orphan"  lazy="false">
+    <set name="labelTokens" table="OS_PRINT_LABEL_TOKENS"  cascade="all-delete-orphan">
       <key column="RULE_ID"/>
       <element column="TOKEN" type="string" not-null="true"/>
     </set>

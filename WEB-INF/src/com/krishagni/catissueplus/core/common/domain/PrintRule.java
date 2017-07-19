@@ -13,7 +13,6 @@ public class PrintRule extends BaseEntity {
 	public enum CmdFileFmt {
 		CSV,
 		KEY_VALUE;
-
 	};
 
 	public enum Lineage {

@@ -3,8 +3,12 @@ package com.krishagni.catissueplus.core.common.domain.factory;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.krishagni.catissueplus.core.administrative.domain.PermissibleValue;
+import com.krishagni.catissueplus.core.administrative.domain.Site;
+import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
 import com.krishagni.catissueplus.core.common.domain.PrintRule;
@@ -45,25 +49,27 @@ public class PrintRuleFactory {
 	}
 
 	private void setCollectionProtocol(PrintRuleDetail input, PrintRule result) {
-		CollectionProtocol cp = getCollectionProtocol(input);
-		if (cp == null) {
+		Long cpId = input.getCpId();
+		String cpTitle = input.getCpTitle();
+		String cpShortTitle = input.getCpShortTitle();
+
+		if (cpId == null && StringUtils.isBlank(cpTitle) && StringUtils.isBlank(cpShortTitle)) {
 			return;
 		}
 
-		result.setCollectionProtocol(cp);
-	}
-
-	private  CollectionProtocol getCollectionProtocol(PrintRuleDetail detail) {
 		CollectionProtocol cp = null;
-		if (detail.getCpId() != null) {
-			cp = daoFactory.getCollectionProtocolDao().getById(detail.getCpId());
-		} else if (StringUtils.isNoneBlank(detail.getCpTitle())) {
-			cp = daoFactory.getCollectionProtocolDao().getCollectionProtocol(detail.getCpTitle());
-		} else if (StringUtils.isNoneBlank(detail.getCpShortTitle())) {
-			cp = daoFactory.getCollectionProtocolDao().getCpByShortTitle(detail.getCpShortTitle());
+		if (cpId != null) {
+			cp = daoFactory.getCollectionProtocolDao().getById(cpId);
+		} else if (StringUtils.isNoneBlank(cpTitle)) {
+			cp = daoFactory.getCollectionProtocolDao().getCollectionProtocol(cpTitle);
+		} else if (StringUtils.isNoneBlank(cpShortTitle)) {
+			cp = daoFactory.getCollectionProtocolDao().getCpByShortTitle(cpShortTitle);
 		}
 
-		return cp;
+		if (cp == null) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.CP_NOT_FOUND);
+		}
+		result.setCollectionProtocol(cp);
 	}
 
 	private void setVisitSite(PrintRuleDetail input, PrintRule result) {
@@ -72,7 +78,11 @@ public class PrintRuleFactory {
 			return;
 		}
 
-		result.setVisitSite(daoFactory.getSiteDao().getSiteByName(input.getVisitSite()));
+		Site site = daoFactory.getSiteDao().getSiteByName(input.getVisitSite());
+		if (site == null) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.VISIT_SITE_NOT_FOUND);
+		}
+		result.setVisitSite(site);
 	}
 
 	private void setSpecimenClass(PrintRuleDetail input, PrintRule result) {
@@ -81,7 +91,11 @@ public class PrintRuleFactory {
 			return;
 		}
 
-		result.setSpecimenClass(daoFactory.getPermissibleValueDao().getByValue("specimen_type", specimenClass));
+		PermissibleValue spmnClass = daoFactory.getPermissibleValueDao().getByValue("specimen_type", specimenClass);
+		if (spmnClass == null) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.SPMN_CLASS_NOT_FOUND);
+		}
+		result.setSpecimenClass(spmnClass);
 	}
 
 	private void setSpecimenType(PrintRuleDetail input, PrintRule result) {
@@ -90,16 +104,24 @@ public class PrintRuleFactory {
 			return;
 		}
 
-		result.setSpecimenType(daoFactory.getPermissibleValueDao().getByValue("specimen_type", specimenType));
+		PermissibleValue spmnType = daoFactory.getPermissibleValueDao().getByValue("specimen_type", specimenType);
+		if (spmnType == null) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.SPMN_TYPE_NOT_FOUND);
+		}
+		result.setSpecimenType(spmnType);
 	}
 
 	private void setUser(PrintRuleDetail input, PrintRule result) {
-		UserSummary user = input.getUserSummary();
-		if (user == null) {
+		UserSummary userSummary = input.getUserSummary();
+		if (userSummary == null) {
 			return;
 		}
 
-		result.setUser(daoFactory.getUserDao().getById(user.getId()));
+		User user = daoFactory.getUserDao().getById(userSummary.getId());
+		if(user == null) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.USER_NOT_FOUND);
+		}
+		result.setUser(user);
 	}
 
 	private void setIpRange(PrintRuleDetail input, PrintRule result) {
@@ -154,6 +176,9 @@ public class PrintRuleFactory {
 			return;
 		}
 
+		if(!EnumUtils.isValidEnum(PrintRule.CmdFileFmt.class, cmdFileFmt)) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.CMD_FILE_FMT_NOT_FOUND);
+		}
 		result.setCmdFileFmt(PrintRule.CmdFileFmt.valueOf(cmdFileFmt));
 	}
 
@@ -163,6 +188,9 @@ public class PrintRuleFactory {
 			return;
 		}
 
+		if(!EnumUtils.isValidEnum(PrintRule.Lineage.class, lineage)) {
+			throw OpenSpecimenException.userError(PrintRuleErrorCode.LINEAGE_NOT_FOUND);
+		}
 		result.setLineage(PrintRule.Lineage.valueOf(lineage));
 	}
 
