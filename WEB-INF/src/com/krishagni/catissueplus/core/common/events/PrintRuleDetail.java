@@ -186,8 +186,8 @@ public class PrintRuleDetail {
 		}
 
 		detail.setVisitSite(printRule.getVisitSite() != null ? printRule.getVisitSite().getName() : null);
-		detail.setSpecimenClass(String.valueOf(printRule.getSpecimenClass()));
-		detail.setSpecimenType(String.valueOf(printRule.getSpecimenType()));
+		detail.setSpecimenClass(printRule.getSpecimenClass() != null ? printRule.getSpecimenClass().getValue() : null);
+		detail.setSpecimenType(printRule.getSpecimenType() != null ? printRule.getSpecimenType().getValue() : null);
 		detail.setUserSummary(printRule.getUser() != null ? UserSummary.from(printRule.getUser()) : null);
 		detail.setIpRange(printRule.getIpRange());
 		detail.setLabelType(printRule.getLabelType());
