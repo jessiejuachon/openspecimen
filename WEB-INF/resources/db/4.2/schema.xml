@@ -101,7 +101,7 @@
         where
           u.activity_status != 'Disabled' and
           i.activity_status != 'Disabled' and
-          s.activity_status != 'Disabled'
+          (s.identifier is null or s.activity_status != 'Disabled')
       )
     </sql>
   </changeSet>
@@ -122,12 +122,30 @@
         where
           u.activity_status != 'Disabled' and
           i.activity_status != 'Disabled' and
-          s.activity_status != 'Disabled'
+          (s.identifier is null or s.activity_status != 'Disabled')
       )
     </sql>
   </changeSet>
 
-  <changeSet author="mghodekar" id="Configuration property levels">
+  <changeSet author="vpawar" id="Add index on EMPI field of staged participants to fasten participants lookup based on EMPI">
+    <createIndex tableName="OS_STAGED_PARTICIPANTS" indexName="OS_STAGED_PARTS_EMPI_IDX">
+      <column name="EMPI_ID"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet author="ckhilosiya" id="Add specimen list to order">
+    <addColumn tableName="OS_ORDERS">
+      <column name="SPECIMEN_LIST_ID" type="${int.type}"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet author="ckhilosiya" id="FK on specimen list in order">
+    <addForeignKeyConstraint constraintName="FK_OS_DO_SPMN_LIST_ID"
+      baseTableName="OS_ORDERS" baseColumnNames="SPECIMEN_LIST_ID"
+      referencedTableName="CATISSUE_SPECIMENLIST_TAGS" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+  
+   <changeSet author="mghodekar" id="Configuration property levels">
     <createTable tableName="OS_CFG_PROP_LEVELS">
       <column name="PROPERTY_ID" type="${int.type}">
         <constraints nullable="false"/>

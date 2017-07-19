@@ -27,11 +27,9 @@ import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.hibernate.sql.JoinType;
-import org.hibernate.type.LongType;
 
 import com.krishagni.catissueplus.core.administrative.domain.StorageContainer;
 import com.krishagni.catissueplus.core.administrative.domain.StorageContainerPosition;
-import com.krishagni.catissueplus.core.administrative.events.ContainerSelectorCriteria;
 import com.krishagni.catissueplus.core.administrative.events.StorageContainerSummary;
 import com.krishagni.catissueplus.core.administrative.events.StorageLocationSummary;
 import com.krishagni.catissueplus.core.administrative.repository.ContainerRestrictionsCriteria;
@@ -199,12 +197,15 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 
 	@Override
 	public List<Specimen> getSpecimens(SpecimenListCriteria crit, boolean orderByLocation) {
-		Criteria query = getContainerSpecimensListQuery(crit)
+		Criteria query = getCurrentSession().createCriteria(Specimen.class, "specimen")
+			.createAlias("specimen.position", "pos")
+			.add(Subqueries.propertyIn("specimen.id", getContainerSpecimensListQuery(crit)))
 			.setFirstResult(crit.startAt())
 			.setMaxResults(crit.maxResults());
 
 		if (orderByLocation) {
-			query.addOrder(Order.asc("pos.container"))
+			query.createAlias("pos.container", "container")
+				.addOrder(Order.asc("container.name"))
 				.addOrder(Order.asc("pos.posTwoOrdinal"))
 				.addOrder(Order.asc("pos.posOneOrdinal"));
 		} else {
@@ -218,8 +219,8 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 	public Long getSpecimensCount(SpecimenListCriteria crit) {
 		Number count = (Number) getContainerSpecimensListQuery(crit)
 			.setProjection(Projections.rowCount())
+			.getExecutableCriteria(getCurrentSession())
 			.uniqueResult();
-
 		return count.longValue();
 	}
 
@@ -326,39 +327,6 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 	}
 
 	@Override
-	@SuppressWarnings(value = "unchecked")
-	public List<Long> getLeastEmptyContainerId(ContainerSelectorCriteria crit) {
-		getCurrentSession().flush();
-
-		String sql = getCurrentSession().getNamedQuery(GET_LEAST_EMPTY_CONTAINER_ID).getQueryString();
-		int groupByIdx = sql.indexOf("group by");
-		String beforeGroupBySql = sql.substring(0, groupByIdx);
-		String groupByLaterSql  = sql.substring(groupByIdx);
-
-		List<String> accessRestrictions = new ArrayList<>();
-		for (Pair<Long, Long> siteCp : crit.siteCps()) {
-			accessRestrictions.add(new StringBuilder("(c.site_id = ")
-				.append(siteCp.first())
-				.append(" and ")
-				.append("(allowed_cps.cp_id is null or allowed_cps.cp_id = ").append(siteCp.second()).append(")")
-				.append(")")
-				.toString()
-			);
-		}
-
-		sql = beforeGroupBySql + " and (" + StringUtils.join(accessRestrictions, " or ") + ") " + groupByLaterSql;
-		return getCurrentSession().createSQLQuery(sql)
-			.addScalar("containerId", LongType.INSTANCE)
-			.setLong("cpId", crit.cpId())
-			.setString("specimenClass", crit.specimenClass())
-			.setString("specimenType", crit.type())
-			.setInteger("minFreeLocs", crit.minFreePositions())
-			.setDate("reservedLaterThan", crit.reservedLaterThan())
-			.setMaxResults(crit.numContainers())
-			.list();
-	}
-
-	@Override
 	public int deleteReservedPositions(List<String> reservationIds) {
 		return getCurrentSession().getNamedQuery(DEL_POS_BY_RSV_ID)
 			.setParameterList("reservationIds", reservationIds)
@@ -432,12 +400,16 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 		return s1.getStorageLocation().getPosition() - s2.getStorageLocation().getPosition();
 	}
 
-	private Criteria getContainerSpecimensListQuery(SpecimenListCriteria crit) {
-		Criteria query = getCurrentSession().createCriteria(Specimen.class, "specimen")
-			.createAlias("position", "pos")
+	private DetachedCriteria getContainerSpecimensListQuery(SpecimenListCriteria crit) {
+		DetachedCriteria detachedCriteria = DetachedCriteria.forClass(Specimen.class, "specimen")
+			.setProjection(Projections.distinct(Projections.property("specimen.id")));
+		Criteria query = detachedCriteria.getExecutableCriteria(getCurrentSession());
+
+
+		query.createAlias("specimen.position", "pos")
 			.createAlias("pos.container", "container")
-			.createAlias("container.ancestorContainers", "ansc")
-			.add(Restrictions.eq("ansc.id", crit.ancestorContainerId()));
+			.createAlias("container.ancestorContainers", "anscestor")
+			.add(Restrictions.eq("anscestor.id", crit.ancestorContainerId()));
 
 		if (crit.containerId() != null) {
 			query.add(Restrictions.eq("container.id", crit.containerId()));
@@ -478,7 +450,7 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 		}
 
 		SpecimenDaoHelper.getInstance().addSiteCpsCond(query, crit, startAlias);
-		return query;
+		return detachedCriteria;
 	}
 
 	private class ListQueryBuilder {
@@ -749,8 +721,6 @@ public class StorageContainerDaoImpl extends AbstractDao<StorageContainer> imple
 	private static final String GET_ROOT_AND_CHILD_CONTAINERS = FQN + ".getRootAndChildContainers";
 
 	private static final String GET_CHILD_CONTAINERS = FQN + ".getChildContainers";
-
-	private static final String GET_LEAST_EMPTY_CONTAINER_ID = FQN + ".getLeastEmptyContainerId";
 
 	private static final String DEL_POS_BY_RSV_ID = FQN + ".deletePositionsByReservationIds";
 
