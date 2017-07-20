@@ -87,6 +87,64 @@
       referencedTableName="OS_NOTIFICATIONS" referencedColumnNames="IDENTIFIER"/>
   </changeSet>
 
+  <changeSet author="vgaikwad" id="Updated user view to include primary site" runOnChange="true">
+    <sql>
+      create or replace view USER_VIEW as (
+        select
+          u.identifier as identifier, u.first_name as first_name, u.last_name as last_name,
+          u.email_address as email_address, concat(u.first_name, concat(' ', u.last_name)) as name,
+          i.name as institute_name, s.identifier as primary_site_id, s.name as primary_site_name
+        from
+          catissue_user u
+          inner join catissue_institution i on i.identifier = u.institute_id
+          left join catissue_site s on s.identifier = u.primary_site_id
+        where
+          u.activity_status != 'Disabled' and
+          i.activity_status != 'Disabled' and
+          (s.identifier is null or s.activity_status != 'Disabled')
+      )
+    </sql>
+  </changeSet>
+
+  <changeSet author="vgaikwad" id="Updated the CP coordinator view to include primary site" runOnChange="true">
+    <sql>
+      create or replace view cp_coord_view as (
+        select
+          u.identifier as identifier, u.first_name as first_name, u.last_name as last_name,
+          u.email_address as email_address, concat(u.first_name, concat(' ', u.last_name)) as name,
+          i.name as institute_name, s.identifier as primary_site_id, s.name as primary_site_name,
+          cpcrd.collection_protocol_id as cp_id
+        from
+          catissue_coll_coordinators cpcrd
+          inner join catissue_user u on u.identifier = cpcrd.user_id
+          inner join catissue_institution i on i.identifier = u.institute_id
+          left join catissue_site s on s.identifier = u.primary_site_id
+        where
+          u.activity_status != 'Disabled' and
+          i.activity_status != 'Disabled' and
+          (s.identifier is null or s.activity_status != 'Disabled')
+      )
+    </sql>
+  </changeSet>
+
+  <changeSet author="vpawar" id="Add index on EMPI field of staged participants to fasten participants lookup based on EMPI">
+    <createIndex tableName="OS_STAGED_PARTICIPANTS" indexName="OS_STAGED_PARTS_EMPI_IDX">
+      <column name="EMPI_ID"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet author="ckhilosiya" id="Add specimen list to order">
+    <addColumn tableName="OS_ORDERS">
+      <column name="SPECIMEN_LIST_ID" type="${int.type}"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet author="ckhilosiya" id="FK on specimen list in order">
+    <addForeignKeyConstraint constraintName="FK_OS_DO_SPMN_LIST_ID"
+      baseTableName="OS_ORDERS" baseColumnNames="SPECIMEN_LIST_ID"
+      referencedTableName="CATISSUE_SPECIMENLIST_TAGS" referencedColumnNames="IDENTIFIER"/>
+  </changeSet>
+
   <changeSet author="ckhilosiya" id="Maintain status of API calls for container store list">
     <addColumn tableName="OS_CONTAINER_STORE_LISTS">
       <column name="STATUS" type="${text.type}(16)">

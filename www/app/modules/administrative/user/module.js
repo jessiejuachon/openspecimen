@@ -148,5 +148,9 @@ angular.module('os.administrative.user',
         controller: 'UserPasswordCtrl',
         parent: 'user-root'
       })
-  });
+  })
 
+  .run(function(UrlResolver) {
+    UrlResolver.regUrlState('user-overview', 'user-detail.overview', 'userId');
+    UrlResolver.regUrlState('user-roles', 'user-detail.roles', 'userId');
+  });

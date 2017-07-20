@@ -193,6 +193,7 @@ public class UserDaoImpl extends AbstractDao<User> implements UserDao {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public Map<Long, Integer> getCpCount(Collection<Long> userIds) {
 		List<Object[]> rows = getCurrentSession().getNamedQuery(GET_CP_COUNT_BY_USERS)
 			.setParameterList("userIds", userIds)
@@ -204,6 +205,14 @@ public class UserDaoImpl extends AbstractDao<User> implements UserDao {
 		}
 
 		return result;
+	}
+
+	@Override
+	public List<User> getSuperAndInstituteAdmins(String instituteName) {
+		UserListCriteria crit = new UserListCriteria().activityStatus("Active").type("SUPER");
+		List<User> users = getUsers(crit);
+		users.addAll(getUsers(crit.type("INSTITUTE").instituteName(instituteName)));
+		return users;
 	}
 
 	private Criteria getUsersListQuery(UserListCriteria crit) {
@@ -218,7 +227,6 @@ public class UserDaoImpl extends AbstractDao<User> implements UserDao {
 
 		return addSearchConditions(criteria, crit);
 	}
-
 
 	private String[] excludeUsersList() {
 		return new String[] {
