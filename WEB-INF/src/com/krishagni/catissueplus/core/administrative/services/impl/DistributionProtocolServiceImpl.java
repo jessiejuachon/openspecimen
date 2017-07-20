@@ -42,6 +42,7 @@ import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocol;
 import com.krishagni.catissueplus.core.biospecimen.domain.ConsentStatement;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.ConsentStatementErrorCode;
 import com.krishagni.catissueplus.core.biospecimen.repository.DaoFactory;
+import com.krishagni.catissueplus.core.common.domain.Notification;
 import com.krishagni.catissueplus.core.common.PlusTransactional;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr;
 import com.krishagni.catissueplus.core.common.errors.ActivityStatusErrorCode;
@@ -60,6 +61,7 @@ import com.krishagni.catissueplus.core.common.util.MessageUtil;
 import com.krishagni.catissueplus.core.common.util.Status;
 import com.krishagni.catissueplus.core.common.util.Utility;
 import com.krishagni.catissueplus.core.common.util.EmailUtil;
+import com.krishagni.catissueplus.core.common.util.NotifUtil;
 import com.krishagni.catissueplus.core.de.services.FormService;
 import com.krishagni.rbac.common.errors.RbacErrorCode;
 
@@ -168,7 +170,7 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 			
 			daoFactory.getDistributionProtocolDao().saveOrUpdate(dp);
 			dp.addOrUpdateExtension();
-			sendEmail(dp);
+			notifyUsers(dp);
 			return ResponseEvent.response(DistributionProtocolDetail.from(dp));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -789,36 +791,75 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 		}
 	}
 
-	private void sendEmail(DistributionProtocol dp) {
-		Map<String, Object> props = new HashMap<>();
-		props.put("dp", dp);
-		props.put("instSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
-
-		EmailUtil.getInstance().sendEmail(ROLE_UPDATED_EMAIL_TMPL, getEmailAddresses(dp), null, props);
-	}
-
-	private String[] getEmailAddresses(DistributionProtocol dp) {
+	private void notifyUsers(DistributionProtocol dp) {
+		List<User> users = new ArrayList<>();
 		UserListCriteria crit = new UserListCriteria()
 			.activityStatus("Active")
 			.type("INSTITUTE")
 			.instituteName(dp.getInstitute().getName());
+		List<User> instituteAdmins = daoFactory.getUserDao().getUsers(crit);
+		users.addAll(instituteAdmins);
+		users.add(dp.getPrincipalInvestigator());
+		users.addAll(dp.getCoordinators());
+		if (dp.getDefReceivingSite() != null) {
+			users.addAll(dp.getDefReceivingSite().getCoordinators());
+		}
 
-		List<String> emailAddresses = new ArrayList<>();
-		emailAddresses.addAll(getEmailFromUsers(daoFactory.getUserDao().getUsers(crit)));
-		emailAddresses.addAll(getEmailFromUsers(dp.getDefReceivingSite().getCoordinators()));
-		emailAddresses.add(dp.getPrincipalInvestigator().getEmailAddress());
-		emailAddresses.addAll(getEmailFromUsers(dp.getCoordinators()));
-		emailAddresses.addAll(dp.getDistributingSites().stream()
+		users.addAll(dp.getDistributingSites().stream()
 			.map(DpDistributionSite::getSite)
 			.filter(s -> s != null)
-			.flatMap(site -> site.getCoordinators().stream())
-			.map(User::getEmailAddress).collect(Collectors.toList()));
+			.flatMap(site -> site.getCoordinators().stream()).collect(Collectors.toList()));
 
-		return emailAddresses.toArray(new String[emailAddresses.size()]);
+		Map<String, Object> props = new HashMap<>();
+		props.put("dp", dp);
+		props.put("instSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
+
+		EmailUtil.getInstance().sendEmail(ROLE_UPDATED_EMAIL_TMPL, getEmailAddresses(users), null, props);
+
+		addNotifications(new ArrayList<User>() {{ add(dp.getPrincipalInvestigator()); }}, dp, null, 0, 1);
+		addNotifications(dp.getCoordinators(), dp, null, 0, 2);
+		addNotifications(instituteAdmins, dp, dp.getInstitute().getName(), 2, 2);
+		if (dp.getDefReceivingSite() != null) {
+			addNotifications(dp.getDefReceivingSite().getCoordinators(), dp, dp.getDefReceivingSite().getName(), 1, 2);
+		}
+
+		for (DpDistributionSite distSite : dp.getDistributingSites()) {
+			if (distSite.getSite() != null) {
+				addNotifications(distSite.getSite().getCoordinators(), dp, distSite.getSite().getName(), 1, 1);
+			}
+		}
 	}
 
-	private List<String> getEmailFromUsers(Collection<User> users) {
-		return users.stream().map(User::getEmailAddress).collect(Collectors.toList());
+	private String[] getEmailAddresses(List<User> users) {
+		return users.stream()
+			.map(User::getEmailAddress).collect(Collectors.toList())
+			.toArray(new String[users.size()]);
+	}
+
+	private void addNotifications(Collection<User> notifyUsers, DistributionProtocol dp, String instSiteName, int siteOrInst, int roleChoice) {
+		Notification notif = new Notification();
+		notif.setEntityType(DistributionProtocol.getEntityName());
+		notif.setEntityId(dp.getId());
+		notif.setOperation("UPDATE");
+		notif.setCreatedBy(AuthUtil.getCurrentUser());
+		notif.setCreationTime(Calendar.getInstance().getTime());
+		notif.setMessage(getNotifMsg(dp.getShortTitle(), instSiteName, siteOrInst, roleChoice));
+
+		NotifUtil.getInstance().notify(notif, Collections.singletonMap("dp-overview", notifyUsers));
+	}
+
+	private String getNotifMsg(String shortTitle, String instSiteName, int siteOrInst, int roleChoice) {
+		String msgKey;
+		Object[] params;
+		if (siteOrInst == 0) {
+			msgKey = "dp_user_notif_role";
+			params = new Object[] { roleChoice, shortTitle};
+		} else {
+			msgKey = "dp_site_inst_notif";
+			params = new Object[] {siteOrInst, instSiteName, roleChoice, shortTitle};
+		}
+
+		return MessageUtil.getInstance().getMessage(msgKey, params);
 	}
 
 	private static final String ROLE_UPDATED_EMAIL_TMPL = "users_dp_role_updated";
