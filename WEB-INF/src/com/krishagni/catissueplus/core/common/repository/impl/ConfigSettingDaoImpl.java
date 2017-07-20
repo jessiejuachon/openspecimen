@@ -61,18 +61,6 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<ConfigSetting> getSettingsLaterThan(Long settingId) {
-		//
-		// TODO: Find where is this API used. If not used, remove it
-		// TODO: Check in plugins as well
-		//
-		return getCurrentSession().getNamedQuery(GET_ALL_LATER_THAN)
-			.setParameter("settingId", settingId)
-			.list();
-	}
-
 	@Override
 	public ConfigSetting getSettingByModuleAndProperty(String moduleName, String propName, String level, Long objectId) {
 		return (ConfigSetting) getCurrentSession().getNamedQuery(GET_SETTING_BY_MODULE_PROP)

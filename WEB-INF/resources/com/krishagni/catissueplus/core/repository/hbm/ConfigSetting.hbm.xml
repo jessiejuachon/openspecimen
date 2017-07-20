@@ -38,7 +38,7 @@
         inner join cprop.module cm
         left join cprop.settings cs
       where
-        :level in elements(cprop.levels) and cs.level =:level and
+        :level in elements(cprop.levels) and
         (:moduleName is null or cm.name = :moduleName) and
         (
           cs.id is null or

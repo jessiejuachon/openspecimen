@@ -160,6 +160,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 				existing = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(module, prop,
 					ConfigProperty.Level.USER.name(), user.getId());
+				if (existing == null) {
+					return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
+				}
 			}
 
 			setting = detail.getValue();
@@ -168,7 +171,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			}
 
 			ConfigSetting newSetting  = createSetting(existing, setting);
-			if (existing.getLevel().equals(newSetting.getLevel())) {
+			if(existing.getLevel().equals(newSetting.getLevel())) {
 				existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
 			}
 
