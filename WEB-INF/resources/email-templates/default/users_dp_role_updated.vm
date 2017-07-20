@@ -7,11 +7,11 @@
             <tr>
               <td style="padding:0px;border-collapse:collapse;padding:0px;padding-bottom:10px">
                 <p style="margin:10px 0 0 0">
-                  Hello Admin,
+                  Hello $rcpt.firstName $rcpt.lastName,
                   <br><br>
-                  You are receiving this email because you are assigned as the PI, Coordinator, Distributing Site or Receiving Site of the below Distribution Protocol.
+                  $emailText.
                   <br><br>
-                  A brief description of the Distribution Protocol is given below:
+                  A brief description of the distribution protocol is given below:
                   <br>
                 </p>
               </td>
@@ -31,10 +31,10 @@
                     <td> PI Name </td>
                     <td> : $dp.principalInvestigator.firstName $dp.principalInvestigator.lastName </td>
                   </tr>
-                  #set( $coordinatorsLength = $dp.coordinators.size() )
-                  #if ($coordinatorsLength > 0)
-                    <tr>
-                      <td> Coordinators </td>
+                  <tr>
+                    <td> Coordinators </td>
+                    #if ($dp.coordinators.size() > 0)
+                      #set( $coordinatorsLength = $dp.coordinators.size() )
                       <td> :
                         #set( $length = 0 )
                         #foreach( $user in $dp.coordinators )
@@ -45,11 +45,17 @@
                           #end
                         #end
                       </td>
-                    </tr>
-                  #end
+                    #else
+                      <td> : Not Specified </td>
+                    #end
+                  </tr>
                   <tr>
                     <td> Receiving site </td>
-                    <td> : $dp.defReceivingSite.name </td>
+                    #if ( $dp.defReceivingSite )
+                      <td> : $dp.defReceivingSite.name </td>
+                    #else
+                      <td> : Not Specified </td>
+                    #end
                   </tr>
                   <tr>
                     <td> Receiving institute </td>

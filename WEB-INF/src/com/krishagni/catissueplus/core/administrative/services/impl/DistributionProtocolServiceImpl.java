@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -792,58 +791,45 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 	}
 
 	private void notifyUsers(DistributionProtocol dp) {
-		List<User> users = new ArrayList<>();
 		UserListCriteria crit = new UserListCriteria()
 			.activityStatus("Active")
 			.type("INSTITUTE")
 			.instituteName(dp.getInstitute().getName());
-		List<User> instituteAdmins = daoFactory.getUserDao().getUsers(crit);
-		users.addAll(instituteAdmins);
-		users.add(dp.getPrincipalInvestigator());
-		users.addAll(dp.getCoordinators());
-		if (dp.getDefReceivingSite() != null) {
-			users.addAll(dp.getDefReceivingSite().getCoordinators());
-		}
-
-		users.addAll(dp.getDistributingSites().stream()
-			.map(DpDistributionSite::getSite)
-			.filter(s -> s != null)
-			.flatMap(site -> site.getCoordinators().stream()).collect(Collectors.toList()));
 
 		Map<String, Object> props = new HashMap<>();
 		props.put("dp", dp);
 		props.put("instSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
 
-		EmailUtil.getInstance().sendEmail(ROLE_UPDATED_EMAIL_TMPL, getEmailAddresses(users), null, props);
-
-		addNotifications(new ArrayList<User>() {{ add(dp.getPrincipalInvestigator()); }}, dp, null, 0, 1);
-		addNotifications(dp.getCoordinators(), dp, null, 0, 2);
-		addNotifications(instituteAdmins, dp, dp.getInstitute().getName(), 2, 2);
+		sendEmailAndNotif(new ArrayList<User>() {{ add(dp.getPrincipalInvestigator()); }}, dp, props, null, 0, 1);
+		sendEmailAndNotif(dp.getCoordinators(), dp, props, null, 0, 2);
+		sendEmailAndNotif(daoFactory.getUserDao().getUsers(crit), dp, props, dp.getInstitute().getName(), 2, 2);
 		if (dp.getDefReceivingSite() != null) {
-			addNotifications(dp.getDefReceivingSite().getCoordinators(), dp, dp.getDefReceivingSite().getName(), 1, 2);
+			sendEmailAndNotif(dp.getDefReceivingSite().getCoordinators(), dp, props, dp.getDefReceivingSite().getName(), 1, 2);
 		}
 
 		for (DpDistributionSite distSite : dp.getDistributingSites()) {
 			if (distSite.getSite() != null) {
-				addNotifications(distSite.getSite().getCoordinators(), dp, distSite.getSite().getName(), 1, 1);
+				sendEmailAndNotif(distSite.getSite().getCoordinators(), dp, props, distSite.getSite().getName(), 1, 1);
 			}
 		}
 	}
 
-	private String[] getEmailAddresses(List<User> users) {
-		return users.stream()
-			.map(User::getEmailAddress).collect(Collectors.toList())
-			.toArray(new String[users.size()]);
-	}
+	private void sendEmailAndNotif(Collection<User> notifyUsers, DistributionProtocol dp, Map<String, Object> props,
+				String instSiteName, int siteOrInst, int roleChoice) {
+		String notifMessage = getNotifMsg(dp.getShortTitle(), instSiteName, siteOrInst, roleChoice);
+		props.put("emailText", notifMessage);
+		for (User rcpt : notifyUsers) {
+			props.put("rcpt", rcpt);
+			EmailUtil.getInstance().sendEmail(ROLE_UPDATED_EMAIL_TMPL, new String[] {rcpt.getEmailAddress()}, null, props);
+		}
 
-	private void addNotifications(Collection<User> notifyUsers, DistributionProtocol dp, String instSiteName, int siteOrInst, int roleChoice) {
 		Notification notif = new Notification();
 		notif.setEntityType(DistributionProtocol.getEntityName());
 		notif.setEntityId(dp.getId());
 		notif.setOperation("UPDATE");
 		notif.setCreatedBy(AuthUtil.getCurrentUser());
 		notif.setCreationTime(Calendar.getInstance().getTime());
-		notif.setMessage(getNotifMsg(dp.getShortTitle(), instSiteName, siteOrInst, roleChoice));
+		notif.setMessage(notifMessage);
 
 		NotifUtil.getInstance().notify(notif, Collections.singletonMap("dp-overview", notifyUsers));
 	}
