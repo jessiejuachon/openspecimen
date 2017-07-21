@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Calendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -35,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krishagni.catissueplus.core.administrative.domain.Site;
 import com.krishagni.catissueplus.core.administrative.domain.StorageContainer;
 import com.krishagni.catissueplus.core.administrative.domain.User;
+import com.krishagni.catissueplus.core.administrative.repository.UserListCriteria;
 import com.krishagni.catissueplus.core.biospecimen.ConfigParams;
 import com.krishagni.catissueplus.core.biospecimen.WorkflowUtil;
 import com.krishagni.catissueplus.core.biospecimen.domain.AliquotSpecimensRequirement;
@@ -50,6 +53,7 @@ import com.krishagni.catissueplus.core.biospecimen.domain.DerivedSpecimenRequire
 import com.krishagni.catissueplus.core.biospecimen.domain.Specimen;
 import com.krishagni.catissueplus.core.biospecimen.domain.SpecimenRequirement;
 import com.krishagni.catissueplus.core.biospecimen.domain.Visit;
+import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocolSite;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.CollectionProtocolFactory;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.ConsentStatementErrorCode;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.CpErrorCode;
@@ -85,6 +89,7 @@ import com.krishagni.catissueplus.core.common.Pair;
 import com.krishagni.catissueplus.core.common.PlusTransactional;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr;
 import com.krishagni.catissueplus.core.common.access.AccessCtrlMgr.ParticipantReadAccess;
+import com.krishagni.catissueplus.core.common.domain.Notification;
 import com.krishagni.catissueplus.core.common.errors.ErrorType;
 import com.krishagni.catissueplus.core.common.errors.OpenSpecimenException;
 import com.krishagni.catissueplus.core.common.events.BulkDeleteEntityOp;
@@ -92,11 +97,12 @@ import com.krishagni.catissueplus.core.common.events.BulkDeleteEntityResp;
 import com.krishagni.catissueplus.core.common.events.DependentEntityDetail;
 import com.krishagni.catissueplus.core.common.events.RequestEvent;
 import com.krishagni.catissueplus.core.common.events.ResponseEvent;
-import com.krishagni.catissueplus.core.common.service.EmailService;
 import com.krishagni.catissueplus.core.common.service.ObjectStateParamsResolver;
 import com.krishagni.catissueplus.core.common.util.AuthUtil;
 import com.krishagni.catissueplus.core.common.util.ConfigUtil;
+import com.krishagni.catissueplus.core.common.util.EmailUtil;
 import com.krishagni.catissueplus.core.common.util.MessageUtil;
+import com.krishagni.catissueplus.core.common.util.NotifUtil;
 import com.krishagni.catissueplus.core.common.util.Utility;
 import com.krishagni.catissueplus.core.query.Column;
 import com.krishagni.catissueplus.core.query.ListConfig;
@@ -119,14 +125,19 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private DaoFactory daoFactory;
 	
 	private RbacService rbacSvc;
-	
-	private EmailService emailService;
 
 	private ListGenerator listGenerator;
 
 	private CpReportSettingsFactory rptSettingsFactory;
 
 	private Map<String, Function<Map<String, Object>, ListConfig>> listConfigFns = new HashMap<>();
+
+	private static final Map<String, String> NOTIF_OPS = new HashMap<String, String>() {{
+		put("created",  "CREATE");
+		put("deleted",  "DELETE");
+		put("added",    "UPDATE");
+		put("removed",  "UPDATE");
+	}};
 	
 	public void setTaskExecutor(ThreadPoolTaskExecutor taskExecutor) {
 		this.taskExecutor = taskExecutor;
@@ -150,10 +161,6 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 
 	public void setRbacSvc(RbacService rbacSvc) {
 		this.rbacSvc = rbacSvc;
-	}
-
-	public void setEmailService(EmailService emailService) {
-		this.emailService = emailService;
 	}
 
 	public void setListGenerator(ListGenerator listGenerator) {
@@ -254,6 +261,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	public ResponseEvent<CollectionProtocolDetail> createCollectionProtocol(RequestEvent<CollectionProtocolDetail> req) {
 		try {
 			CollectionProtocol cp = createCollectionProtocol(req.getPayload(), null, false);
+			notifyUsers(cp, "created");
 			return ResponseEvent.response(CollectionProtocolDetail.from(cp));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -261,7 +269,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 			return ResponseEvent.serverError(e);
 		}
 	}
-	
+
 	@Override
 	@PlusTransactional
 	public ResponseEvent<CollectionProtocolDetail> updateCollectionProtocol(RequestEvent<CollectionProtocolDetail> req) {
@@ -420,7 +428,6 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 			}
 
 			boolean completed = crit.isForceDelete() ? forceDeleteCps(cps) : deleteCps(cps);
-
 			BulkDeleteEntityResp<CollectionProtocolDetail> resp = new BulkDeleteEntityResp<>();
 			resp.setCompleted(completed);
 			resp.setEntities(CollectionProtocolDetail.from(cps));
@@ -1779,18 +1786,55 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 		rbacSvc.removeCpRoles(cp.getId());
 	}
 
-	private void sendEmail(CollectionProtocol cp, boolean success, String stackTrace) {
-		User currentUser = AuthUtil.getCurrentUser();
-		String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
+	private void notifyUsers(CollectionProtocol cp, String op) {
+		UserListCriteria crit = new UserListCriteria().activityStatus("Active").type("SUPER");
+		List<User> superAdmins = daoFactory.getUserDao().getUsers(crit);
+		sendEmailAndNotif(superAdmins, cp, CP_OP_SUCCESS_EMAIL_TMPL, op, new Object[] {cp.getShortTitle(), op});
+		op = op.equals("created") ? "added" : "removed";
+		for (CollectionProtocolSite cpSite : cp.getSites()) {
+			sendEmailAndNotif(cpSite.getSite().getCoordinators(), cp, CP_SITE_ROLE_UPDATE_TMPL, op,
+				new Object[] {cpSite.getSite().getName(), op.equals("added") ? 1 : 2, cp.getShortTitle()});
+		}
+	}
 
-		Map<String, Object> props = new HashMap<>();
+	private void sendEmailAndNotif(Collection<User> notifyUsers, CollectionProtocol cp, String template, String op, Object[] subjParams) {
+		Map<String, Object> props = new HashedMap();
+		props.put("$subject", subjParams);
 		props.put("cp", cp);
-		props.put("$subject", new String[] {cp.getShortTitle()});
-		props.put("user", currentUser);
-		props.put("error", stackTrace);
+		props.put("op", op);
+		props.put("currentUser", AuthUtil.getCurrentUser());
+		props.put("ccAdmin", false);
+		for (User rcpt : notifyUsers) {
+			props.put("rcpt", rcpt);
+			EmailUtil.getInstance().sendEmail(template, new String[] {rcpt.getEmailAddress()}, null, props);
+		}
 
-		String tmpl = success ? CP_DELETE_SUCCESS_EMAIL_TMPL : CP_DELETE_FAILED_EMAIL_TMPL;
-		emailService.sendEmail(tmpl, rcpts, props);
+		Notification notif = new Notification();
+		notif.setEntityType(CollectionProtocol.getEntityName());
+		notif.setEntityId(cp.getId());
+		notif.setOperation(NOTIF_OPS.get(op));
+		notif.setCreatedBy(AuthUtil.getCurrentUser());
+		notif.setCreationTime(Calendar.getInstance().getTime());
+		notif.setMessage(MessageUtil.getInstance().getMessage(template + "_subj", subjParams));
+
+		NotifUtil.getInstance().notify(notif, Collections.singletonMap("cp-overview", notifyUsers));
+	}
+
+	private void sendEmail(CollectionProtocol cp, boolean success, String stackTrace) {
+		if (success) {
+			notifyUsers(cp, "deleted");
+		} else {
+			User currentUser = AuthUtil.getCurrentUser();
+			String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
+
+			Map<String, Object> props = new HashMap<>();
+			props.put("cp", cp);
+			props.put("$subject", new String[] {cp.getShortTitle()});
+			props.put("user", currentUser);
+			props.put("error", stackTrace);
+
+			EmailUtil.getInstance().sendEmail(CP_DELETE_FAILED_EMAIL_TMPL, rcpts, null, props);
+		}
 	}
 
 	private String getMsg(String code) {
@@ -1992,7 +2036,9 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 
 	private static final String ALIQUOT_LABEL_MSG            = "cp_aliquot_label";
 	
-	private static final String CP_DELETE_SUCCESS_EMAIL_TMPL = "cp_delete_success";
+	private static final String CP_OP_SUCCESS_EMAIL_TMPL     = "cp_op_success";
 	
 	private static final String CP_DELETE_FAILED_EMAIL_TMPL  = "cp_delete_failed";
+
+	private static final String CP_SITE_ROLE_UPDATE_TMPL     = "cp_site_role_updated";
 }
