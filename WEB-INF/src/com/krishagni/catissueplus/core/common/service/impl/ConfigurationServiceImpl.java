@@ -90,7 +90,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			try {
 				propLevel = ConfigProperty.Level.valueOf(level);
 			} catch (Exception e) {
-				return ResponseEvent.userError(ConfigErrorCode.INVALID_CONFIG_LEVEL);
+				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_LEVEL);
 			}
 		}
 
@@ -142,10 +142,10 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			String setting = null;
 			String module = detail.getModule();
 			String level = detail.getLevel();
+			moduleSettings = systemSettings.get(detail.getModule());
 			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
 				AccessCtrlMgr.getInstance().ensureUserIsAdmin();
-				moduleSettings = systemSettings.get(detail.getModule());
-				if (moduleSettings == null || moduleSettings.isEmpty()) {
+				if (moduleSettings.isEmpty()) {
 					return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 				}
 
@@ -160,25 +160,28 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 				existing = daoFactory.getConfigSettingDao().getSettingByModuleAndProperty(module, prop,
 					ConfigProperty.Level.USER.name(), user.getId());
-				if (existing == null) {
-					return ResponseEvent.userError(ConfigErrorCode.SETTING_NOT_FOUND);
-				}
+			}
+
+			ConfigProperty property = null;
+			if (existing == null) {
+				property = configProps.get(module + ":" + prop);
+			} else {
+				property = existing.getProperty();
 			}
 
 			setting = detail.getValue();
-			if (!isValidSetting(existing.getProperty(), setting)) {
+			if (!isValidSetting(property, setting)) {
 				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
 			}
 
-			ConfigSetting newSetting  = createSetting(existing, setting);
-			if(existing.getLevel().equals(newSetting.getLevel())) {
+			ConfigSetting newSetting  = createSetting( property, setting, level, user.getId());
+			if (existing != null) {
 				existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
+				daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			}
-
-			daoFactory.getConfigSettingDao().saveOrUpdate(existing);
+			
 			daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
 			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
-				moduleSettings = systemSettings.get(detail.getModule());
 				moduleSettings.put(prop, newSetting);
 				notifyListeners(module, prop, setting);
 			}
@@ -190,7 +193,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		} catch (Exception e) {
 			return ResponseEvent.serverError(e);
 		} finally {
-			if (successful) {
+			if (successful && existing != null) {
 				deleteOldSettingFile(existing);
 			} else {
 				if (existing != null) {
@@ -516,6 +519,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	private Map<String, ConfigProperty> loadProperties() {
 		List<ConfigProperty> props = daoFactory.getConfigSettingDao().getAllProperties();
+		System.out.println(props);
 		return props.stream().collect(Collectors.toMap(p -> p.getModule().getName() + ":" + p.getName(), p -> p));
 	}
 
@@ -611,16 +615,20 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		}
 	}
 	
-	private ConfigSetting createSetting(ConfigSetting existing, String value) {
+	private ConfigSetting createSetting(ConfigProperty property, String value ,String level, long userId) {
 		ConfigSetting newSetting = new ConfigSetting();
-		newSetting.setProperty(existing.getProperty());
+		newSetting.setProperty(property);
 		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
 		newSetting.setActivationDate(Calendar.getInstance().getTime());
-		newSetting.setLevel(existing.getLevel());
-		newSetting.setObjectId(existing.getObjectId());
+		newSetting.setLevel(ConfigProperty.Level.valueOf(level));
+		if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
+			newSetting.setObjectId(null);
+		} else {
+			newSetting.setObjectId(userId);
+		}
+		
 		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
-
-		if (value != null && existing.getProperty().isSecured()) {
+		if (value != null && property.isSecured()) {
 			value = Utility.encrypt(value);
 		}
 		

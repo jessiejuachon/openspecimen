@@ -48,7 +48,7 @@
 
     <query name="getAll">
       select
-        p
+        distinct p
       from
         com.krishagni.catissueplus.core.common.domain.ConfigProperty p
         join fetch p.levels level

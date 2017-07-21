@@ -11,7 +11,7 @@ public enum ConfigErrorCode implements ErrorCode {
 
 	FILE_MOVED_OR_DELETED,
 
-	INVALID_CONFIG_LEVEL;
+	INVALID_SETTING_LEVEL;
 
 	@Override
 	public String code() {
