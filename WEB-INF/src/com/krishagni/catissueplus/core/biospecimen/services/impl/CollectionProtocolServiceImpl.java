@@ -1789,7 +1789,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private void notifyUsers(CollectionProtocol cp, String op) {
 		UserListCriteria crit = new UserListCriteria().activityStatus("Active").type("SUPER");
 		List<User> superAdmins = daoFactory.getUserDao().getUsers(crit);
-		sendEmailAndNotif(superAdmins, cp, CP_OP_SUCCESS_EMAIL_TMPL, op, new Object[] {cp.getShortTitle(), op});
+		sendEmailAndNotif(superAdmins, cp, CP_OP_SUCCESS_EMAIL_TMPL, op, new Object[] {cp.getShortTitle(), getMsg("cp_op_" + op)});
 		op = op.equals("created") ? "added" : "removed";
 		for (CollectionProtocolSite cpSite : cp.getSites()) {
 			sendEmailAndNotif(cpSite.getSite().getCoordinators(), cp, CP_SITE_ROLE_UPDATE_TMPL, op,
@@ -1821,20 +1821,17 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	}
 
 	private void sendEmail(CollectionProtocol cp, boolean success, String stackTrace) {
-		if (success) {
-			notifyUsers(cp, "deleted");
-		} else {
-			User currentUser = AuthUtil.getCurrentUser();
-			String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
+		User currentUser = AuthUtil.getCurrentUser();
+		String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
+		String [] subjParams = success ? new String[] {cp.getShortTitle(), getMsg("cp_op_deleted")} : new String[] {cp.getShortTitle()};
+		Map<String, Object> props = new HashMap<>();
+		props.put("cp", cp);
+		props.put("$subject", subjParams);
+		props.put("user", currentUser);
+		props.put("error", stackTrace);
 
-			Map<String, Object> props = new HashMap<>();
-			props.put("cp", cp);
-			props.put("$subject", new String[] {cp.getShortTitle()});
-			props.put("user", currentUser);
-			props.put("error", stackTrace);
-
-			EmailUtil.getInstance().sendEmail(CP_DELETE_FAILED_EMAIL_TMPL, rcpts, null, props);
-		}
+		String tmpl = success ? CP_OP_SUCCESS_EMAIL_TMPL : CP_DELETE_FAILED_EMAIL_TMPL;
+		EmailUtil.getInstance().sendEmail(tmpl, rcpts, null, props);
 	}
 
 	private String getMsg(String code) {
