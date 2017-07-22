@@ -181,7 +181,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="vpawar" id="Create procedure to add config property" dbms="mysql" runOnChange="true">
+  <changeSet author="mghodekar" id="Create procedure to add config property" dbms="mysql" runOnChange="true">
     <sql>
       drop procedure if exists add_cfg_prop;
     </sql>
@@ -219,7 +219,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="vpawar" id="Create procedure to add config property" dbms="oracle" runOnChange="true">
+  <changeSet author="mghodekar" id="Create procedure to add config property" dbms="oracle" runOnChange="true">
     <sql endDelimiter="//">
       create or replace procedure add_cfg_prop(
         moduleName in varchar2,

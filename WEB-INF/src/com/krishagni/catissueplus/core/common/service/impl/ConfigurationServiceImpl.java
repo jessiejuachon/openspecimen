@@ -90,7 +90,7 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			try {
 				propLevel = ConfigProperty.Level.valueOf(level);
 			} catch (Exception e) {
-				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_LEVEL);
+				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_LEVEL, level);
 			}
 		}
 
@@ -142,10 +142,10 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 			String setting = null;
 			String module = detail.getModule();
 			String level = detail.getLevel();
-			moduleSettings = systemSettings.get(detail.getModule());
 			if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
 				AccessCtrlMgr.getInstance().ensureUserIsAdmin();
-				if (moduleSettings.isEmpty()) {
+				moduleSettings = systemSettings.get(detail.getModule());
+				if (moduleSettings.isEmpty() || moduleSettings == null) {
 					return ResponseEvent.userError(ConfigErrorCode.MODULE_NOT_FOUND);
 				}
 
@@ -162,11 +162,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 					ConfigProperty.Level.USER.name(), user.getId());
 			}
 
-			ConfigProperty property = null;
-			if (existing == null) {
-				property = configProps.get(module + ":" + prop);
-			} else {
-				property = existing.getProperty();
+			ConfigProperty property = existing == null ? configProps.get(module + ":" + prop) : existing.getProperty();
+			if (property == null) {
+				return ResponseEvent.userError(ConfigErrorCode.PROPERTY_NOT_FOUND, prop);
 			}
 
 			setting = detail.getValue();
@@ -174,10 +172,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 				return ResponseEvent.userError(ConfigErrorCode.INVALID_SETTING_VALUE);
 			}
 
-			ConfigSetting newSetting  = createSetting( property, setting, level, user.getId());
+			ConfigSetting newSetting  = createSetting(property, setting, level, user.getId());
 			if (existing != null) {
 				existing.setActivityStatus(Status.ACTIVITY_STATUS_DISABLED.getStatus());
-				daoFactory.getConfigSettingDao().saveOrUpdate(existing);
 			}
 			
 			daoFactory.getConfigSettingDao().saveOrUpdate(newSetting);
@@ -195,11 +192,9 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		} finally {
 			if (successful && existing != null) {
 				deleteOldSettingFile(existing);
-			} else {
-				if (existing != null) {
+			} else if (existing != null) {
 					existing.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
 					moduleSettings.put(prop, existing);
-				}
 			}
 		}
 	}
@@ -519,7 +514,6 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 
 	private Map<String, ConfigProperty> loadProperties() {
 		List<ConfigProperty> props = daoFactory.getConfigSettingDao().getAllProperties();
-		System.out.println(props);
 		return props.stream().collect(Collectors.toMap(p -> p.getModule().getName() + ":" + p.getName(), p -> p));
 	}
 
@@ -615,18 +609,13 @@ public class ConfigurationServiceImpl implements ConfigurationService, Initializ
 		}
 	}
 	
-	private ConfigSetting createSetting(ConfigProperty property, String value ,String level, long userId) {
+	private ConfigSetting createSetting(ConfigProperty property, String value, String level, long objectId) {
 		ConfigSetting newSetting = new ConfigSetting();
 		newSetting.setProperty(property);
 		newSetting.setActivatedBy(AuthUtil.getCurrentUser());
 		newSetting.setActivationDate(Calendar.getInstance().getTime());
 		newSetting.setLevel(ConfigProperty.Level.valueOf(level));
-		if (level.equals(ConfigProperty.Level.SYSTEM.name())) {
-			newSetting.setObjectId(null);
-		} else {
-			newSetting.setObjectId(userId);
-		}
-		
+		newSetting.setObjectId(level.equals(ConfigProperty.Level.SYSTEM.name()) ? null : objectId);
 		newSetting.setActivityStatus(Status.ACTIVITY_STATUS_ACTIVE.getStatus());
 		if (value != null && property.isSecured()) {
 			value = Utility.encrypt(value);

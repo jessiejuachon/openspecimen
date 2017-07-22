@@ -74,8 +74,6 @@ public class ConfigSettingDaoImpl extends AbstractDao<ConfigSetting> implements 
 	private static final String FQN = ConfigSetting.class.getName();
 	
 	private static final String GET_ALL = FQN + ".getAll";
-	
-	private static final String GET_ALL_LATER_THAN = FQN + ".getAllLaterThan";
 
 	private static final String GET_SETTING_BY_MODULE_PROP = FQN + ".getSettingByModuleAndProp";
 

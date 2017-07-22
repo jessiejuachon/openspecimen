@@ -49,16 +49,6 @@
         )
     </query>
 
-    <query name="getAllLaterThan">
-      select
-        cs
-      from
-        com.krishagni.catissueplus.core.common.domain.ConfigSetting cs
-      where
-        cs.activityStatus = 'Active' and
-        cs.id > :settingId
-    </query>
-
     <query name="getSettingByModuleAndProp">
       select
         cs
