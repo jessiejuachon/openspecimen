@@ -19,6 +19,8 @@ angular.module('os.biospecimen.specimenlist')
         breadcrumbs: $stateParams.breadcrumbs
       }
 
+      $scope.menuOpts = {distribution: {specimenListId: list.id}};
+
       $scope.$on('osRightDrawerOpen', initFilterPvs);
 
       $scope.pagingOpts = {
@@ -127,6 +129,15 @@ angular.module('os.biospecimen.specimenlist')
       $state.go(state, params);
     }
 
+    $scope.initSpecimens = function() {
+      loadSpecimens();
+      $scope.ctx.selection = {all: false, any: false, specimens: []};
+    }
+
+    $scope.getSelectedSpecimens = function() {
+      return $scope.ctx.selection.specimens;
+    }
+
     $scope.addChildSpecimens = function() {
       var list = $scope.ctx.list;
       list.addChildSpecimens().then(
@@ -207,31 +218,6 @@ angular.module('os.biospecimen.specimenlist')
 
     $scope.searchContainer = function(name) {
       loadContainerList(name);
-    }
-
-    $scope.distributeSpecimens = function() {
-      if (!$scope.ctx.selection.any) {
-        $state.go('order-addedit', {orderId: '', specimenListId: list.id});
-        return;
-      }
-
-      gotoView('order-addedit', {orderId: ''});
-    }
-
-    $scope.shipSpecimens = function() {
-      gotoView('shipment-addedit', {shipmentId: ''}, 'no_specimens_for_shipment');
-    }
-    
-    $scope.createAliquots = function() {
-      gotoView('specimen-bulk-create-aliquots', {}, 'no_specimens_to_create_aliquots');
-    }
-
-    $scope.createDerivatives = function() {
-      gotoView('specimen-bulk-create-derivatives', {}, 'no_specimens_to_create_derivatives');
-    }
-
-    $scope.addEvent = function() {
-      gotoView('bulk-add-event', {}, 'no_specimens_to_add_event');
     }
 
     $scope.transferSpecimens = function() {
