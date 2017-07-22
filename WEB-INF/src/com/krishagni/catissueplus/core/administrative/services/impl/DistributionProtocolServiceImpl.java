@@ -816,6 +816,11 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 
 	private void sendEmailAndNotif(Collection<User> notifyUsers, DistributionProtocol dp, Map<String, Object> props,
 				String instSiteName, int siteOrInst, int roleChoice) {
+
+		if (CollectionUtils.isEmpty(notifyUsers)) {
+			return;
+		}
+
 		String notifMessage = getNotifMsg(dp.getShortTitle(), instSiteName, siteOrInst, roleChoice);
 		props.put("emailText", notifMessage);
 		for (User rcpt : notifyUsers) {
