@@ -12,9 +12,9 @@
                   Hello $rcpt.firstName $rcpt.lastName,
                   <br><br>
                   #if ($op == "added")
-                    Your site AIT is assigned as the repository for ABCD13 collection protocol by $currentUser.firstName $currentUser.lastName.
+                    Your site AIT is assigned as the repository for $cp.shortTitle collection protocol by $currentUser.firstName $currentUser.lastName.
                   #else
-                    Your site AIT is removed as the repository for ABCD13 collection protocol by $currentUser.firstName $currentUser.lastName.
+                    Your site AIT is removed as the repository for $cp.shortTitle collection protocol by $currentUser.firstName $currentUser.lastName.
                   #end
                 </p>
               </td>

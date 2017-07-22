@@ -1820,18 +1820,23 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 		NotifUtil.getInstance().notify(notif, Collections.singletonMap("cp-overview", notifyUsers));
 	}
 
+	@PlusTransactional
 	private void sendEmail(CollectionProtocol cp, boolean success, String stackTrace) {
-		User currentUser = AuthUtil.getCurrentUser();
-		String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
-		String [] subjParams = success ? new String[] {cp.getShortTitle(), getMsg("cp_op_deleted")} : new String[] {cp.getShortTitle()};
-		Map<String, Object> props = new HashMap<>();
-		props.put("cp", cp);
-		props.put("$subject", subjParams);
-		props.put("user", currentUser);
-		props.put("error", stackTrace);
+		if (success) {
+			notifyUsers(cp, "deleted");
+		} else {
+			User currentUser = AuthUtil.getCurrentUser();
+			String[] rcpts = {currentUser.getEmailAddress(), cp.getPrincipalInvestigator().getEmailAddress()};
+			String [] subjParams = success ? new String[] {cp.getShortTitle(), getMsg("cp_op_deleted")} : new String[] {cp.getShortTitle()};
 
-		String tmpl = success ? CP_OP_SUCCESS_EMAIL_TMPL : CP_DELETE_FAILED_EMAIL_TMPL;
-		EmailUtil.getInstance().sendEmail(tmpl, rcpts, null, props);
+			Map<String, Object> props = new HashMap<>();
+			props.put("cp", cp);
+			props.put("$subject", subjParams);
+			props.put("user", currentUser);
+			props.put("error", stackTrace);
+
+			EmailUtil.getInstance().sendEmail(CP_DELETE_FAILED_EMAIL_TMPL, rcpts, null, props);
+		}
 	}
 
 	private String getMsg(String code) {
