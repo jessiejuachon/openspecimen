@@ -1725,11 +1725,31 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	}
 
 	private void forceDeleteCp(final CollectionProtocol cp) {
+		while (deleteRegistrations(cp));
+		deleteCp(cp);
+	}
+
+	private boolean deleteCps(List<CollectionProtocol> cps) {
+		cps.forEach(cp -> deleteCp(cp));
+		return true;
+	}
+
+	@PlusTransactional
+	private boolean deleteCp(CollectionProtocol cp) {
 		boolean success = false;
 		String stackTrace = null;
 		try {
-			while (deleteRegistrations(cp));
-			deleteCp(cp);
+			//
+			// refresh cp, as it could have been fetched in another transaction
+			// if in same transaction, then it will be obtained from session
+			//
+			cp = daoFactory.getCollectionProtocolDao().getById(cp.getId());
+
+			removeContainerRestrictions(cp);
+			removeDefaultPiRoles(cp, cp.getPrincipalInvestigator());
+			removeDefaultCoordinatorRoles(cp, cp.getCoordinators());
+			removeCpRoles(cp);
+			cp.delete();
 			success = true;
 		} catch (Exception ex) {
 			success = false;
@@ -1743,26 +1763,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 		} finally {
 			sendEmail(cp, success, stackTrace);
 		}
-	}
 
-	private boolean deleteCps(List<CollectionProtocol> cps) {
-		cps.forEach(cp -> deleteCp(cp));
-		return true;
-	}
-	
-	@PlusTransactional
-	private boolean deleteCp(CollectionProtocol cp) {
-		//
-		// refresh cp, as it could have been fetched in another transaction
-		// if in same transaction, then it will be obtained from session
-		//
-		cp = daoFactory.getCollectionProtocolDao().getById(cp.getId());
-
-		removeContainerRestrictions(cp);
-		removeDefaultPiRoles(cp, cp.getPrincipalInvestigator());
-		removeDefaultCoordinatorRoles(cp, cp.getCoordinators());
-		removeCpRoles(cp);
-		cp.delete();
 		return true;
 	}
 	
