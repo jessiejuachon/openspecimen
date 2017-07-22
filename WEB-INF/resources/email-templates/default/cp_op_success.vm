@@ -14,7 +14,7 @@
                   #if ($op == "created")
                     A new collection protocol $cp.shortTitle has been created by $currentUser.firstName $currentUser.lastName.
                   #else
-                    Collection protocol <b> $cp.shortTitle </b> and its registered participants, visits and specimens are successfully deleted by $currentUser.firstName $currentUser.lastName.
+                    The collection protocol <b> $cp.shortTitle </b> and its data is deleted by $currentUser.firstName $currentUser.lastName.
                   #end
                 </p>
               </td>
