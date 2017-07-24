@@ -1794,7 +1794,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 		op = op.equals("created") ? "added" : "removed";
 		for (CollectionProtocolSite cpSite : cp.getSites()) {
 			sendEmailAndNotif(cpSite.getSite().getCoordinators(), cp, CP_SITE_ROLE_UPDATE_TMPL, op,
-				new Object[] {cpSite.getSite().getName(), op.equals("added") ? 1 : 2, cp.getShortTitle()});
+			new Object[] {cpSite.getSite().getName(), op.equals("added") ? N_SITE_ADDED : N_SITE_REMOVED, cp.getShortTitle()});
 		}
 	}
 
@@ -2044,4 +2044,8 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private static final String CP_DELETE_FAILED_EMAIL_TMPL  = "cp_delete_failed";
 
 	private static final String CP_SITE_ROLE_UPDATE_TMPL     = "cp_site_role_updated";
+
+	private static final int N_SITE_ADDED = 1;
+
+	private static final int N_SITE_REMOVED = 2;
 }
