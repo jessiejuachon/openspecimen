@@ -1738,6 +1738,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private boolean deleteCp(CollectionProtocol cp) {
 		boolean success = false;
 		String stackTrace = null;
+		CollectionProtocol deletedCp = new CollectionProtocol();
 		try {
 			//
 			// refresh cp, as it could have been fetched in another transaction
@@ -1749,6 +1750,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 			removeDefaultPiRoles(cp, cp.getPrincipalInvestigator());
 			removeDefaultCoordinatorRoles(cp, cp.getCoordinators());
 			removeCpRoles(cp);
+			BeanUtils.copyProperties(cp, deletedCp);
 			cp.delete();
 			success = true;
 		} catch (Exception ex) {
@@ -1761,7 +1763,7 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 				throw OpenSpecimenException.serverError(ex);
 			}
 		} finally {
-			sendEmail(cp, success, stackTrace);
+			sendEmail(deletedCp, success, stackTrace);
 		}
 
 		return true;
@@ -1790,7 +1792,9 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private void notifyUsers(CollectionProtocol cp, String op) {
 		UserListCriteria crit = new UserListCriteria().activityStatus("Active").type("SUPER");
 		List<User> superAdmins = daoFactory.getUserDao().getUsers(crit);
-		sendEmailAndNotif(superAdmins, cp, CP_OP_SUCCESS_EMAIL_TMPL, op, new Object[] {cp.getShortTitle(), getMsg("cp_op_" + op)});
+		sendEmailAndNotif(superAdmins, cp, CP_OP_SUCCESS_EMAIL_TMPL, op,
+			new Object[] {cp.getShortTitle(), op.equals("created") ? N_CP_CREATED : N_CP_DELETED});
+
 		op = op.equals("created") ? "added" : "removed";
 		for (CollectionProtocolSite cpSite : cp.getSites()) {
 			sendEmailAndNotif(cpSite.getSite().getCoordinators(), cp, CP_SITE_ROLE_UPDATE_TMPL, op,
@@ -2044,6 +2048,10 @@ public class CollectionProtocolServiceImpl implements CollectionProtocolService,
 	private static final String CP_DELETE_FAILED_EMAIL_TMPL  = "cp_delete_failed";
 
 	private static final String CP_SITE_ROLE_UPDATE_TMPL     = "cp_site_role_updated";
+
+	private static final int N_CP_CREATED = 1;
+
+	private static final int N_CP_DELETED = 2;
 
 	private static final int N_SITE_ADDED = 1;
 
