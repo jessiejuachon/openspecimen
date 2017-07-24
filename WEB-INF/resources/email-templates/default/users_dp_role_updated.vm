@@ -34,13 +34,13 @@
                   <tr>
                     <td> Coordinators </td>
                     #if ($dp.coordinators.size() > 0)
-                      #set( $coordinatorsLength = $dp.coordinators.size() )
+                      #set( $numCoordinators = $dp.coordinators.size() )
                       <td> :
-                        #set( $length = 0 )
+                        #set( $count = 0 )
                         #foreach( $user in $dp.coordinators )
                           $user.firstName $user.lastName
-                          #set($length = $length + 1)
-                          #if ($coordinatorsLength > $length)
+                          #set($count = $count + 1)
+                          #if ($count < $numCoordinators)
                             ,
                           #end
                         #end
@@ -70,17 +70,17 @@
                         <th align="left" style="border-bottom:1px solid #e3e3e3;">Institute</th>
                         <th align="left" style="border-bottom:1px solid #e3e3e3;">Sites</th>
                       </tr>
-                      #foreach( $instSiteMap in $instSitesMap.keySet() )
+                      #foreach( $institute in $instituteSitesMap.keySet() )
                         <tr>
-                          <td> $instSiteMap </td>
+                          <td> $institute </td>
                           <td>
-                            #set( $sitesLength = $instSitesMap.get($instSiteMap).size() )
-                            #if ($sitesLength > 0)
-                              #set( $length = 0 )
-                              #foreach( $site in $instSitesMap.get($instSiteMap) )
+                            #set( $numSites = $instituteSitesMap.get($institute).size() )
+                            #if ($numSites > 0)
+                              #set( $count = 0 )
+                              #foreach( $site in $instituteSitesMap.get($institute) )
                                 $site
-                                #set($length = $length + 1)
-                                #if ($sitesLength > $length)
+                                #set($count = $count + 1)
+                                #if ($count < $numSites)
                                   ,
                                 #end
                               #end

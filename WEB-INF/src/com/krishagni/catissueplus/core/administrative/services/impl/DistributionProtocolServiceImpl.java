@@ -18,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.krishagni.catissueplus.core.administrative.domain.Institute;
 import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.administrative.domain.DpDistributionSite;
 import com.krishagni.catissueplus.core.administrative.domain.DistributionProtocol;
@@ -169,7 +170,7 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 			
 			daoFactory.getDistributionProtocolDao().saveOrUpdate(dp);
 			dp.addOrUpdateExtension();
-			notifyUsers(dp);
+			notifyDpRoleUpdated(dp);
 			return ResponseEvent.response(DistributionProtocolDetail.from(dp));
 		} catch (OpenSpecimenException ose) {
 			return ResponseEvent.error(ose);
@@ -790,38 +791,39 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 		}
 	}
 
-	private void notifyUsers(DistributionProtocol dp) {
-		UserListCriteria crit = new UserListCriteria()
-			.activityStatus("Active")
-			.type("INSTITUTE")
-			.instituteName(dp.getInstitute().getName());
-
+	private void notifyDpRoleUpdated(DistributionProtocol dp) {
 		Map<String, Object> props = new HashMap<>();
 		props.put("dp", dp);
-		props.put("instSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
+		props.put("instituteSitesMap", DpDistributionSite.getInstituteSitesMap(dp.getDistributingSites()));
 
-		sendEmailAndNotif(new ArrayList<User>() {{ add(dp.getPrincipalInvestigator()); }}, dp, props, null, 0, 1);
-		sendEmailAndNotif(dp.getCoordinators(), dp, props, null, 0, 2);
-		sendEmailAndNotif(daoFactory.getUserDao().getUsers(crit), dp, props, dp.getInstitute().getName(), 2, 2);
+		notifyDpRoleUpdated(Collections.singletonList(dp.getPrincipalInvestigator()), dp, props, null, N_USER, N_DP_PI);
+		notifyDpRoleUpdated(dp.getCoordinators(), dp, props, null, N_USER, N_DP_COORD);
+
+		notifyDpRoleUpdated(getInstituteAdmins(dp.getInstitute()), dp, props, dp.getInstitute().getName(), N_INST_ADMIN, N_DP_RECV_SITE);
 		if (dp.getDefReceivingSite() != null) {
-			sendEmailAndNotif(dp.getDefReceivingSite().getCoordinators(), dp, props, dp.getDefReceivingSite().getName(), 1, 2);
+			notifyDpRoleUpdated(dp.getDefReceivingSite().getCoordinators(), dp, props, dp.getDefReceivingSite().getName(), N_SITE_ADMIN, N_DP_RECV_SITE);
 		}
 
 		for (DpDistributionSite distSite : dp.getDistributingSites()) {
 			if (distSite.getSite() != null) {
-				sendEmailAndNotif(distSite.getSite().getCoordinators(), dp, props, distSite.getSite().getName(), 1, 1);
+				notifyDpRoleUpdated(distSite.getSite().getCoordinators(), dp, props, distSite.getSite().getName(), 1, 1);
 			}
 		}
 	}
 
-	private void sendEmailAndNotif(Collection<User> notifyUsers, DistributionProtocol dp, Map<String, Object> props,
-				String instSiteName, int siteOrInst, int roleChoice) {
+	private void notifyDpRoleUpdated(
+		Collection<User> notifyUsers,
+		DistributionProtocol dp,
+		Map<String, Object> props,
+		String instSiteName,
+		int userOrSiteOrInst, // 0: user, 1: site, 2: institute
+		int roleChoice) {     // for users -  1: PI / 2: Coordinator, for others - 1: distributing / 2: receiving
 
 		if (CollectionUtils.isEmpty(notifyUsers)) {
 			return;
 		}
 
-		String notifMessage = getNotifMsg(dp.getShortTitle(), instSiteName, siteOrInst, roleChoice);
+		String notifMessage = getNotifMsg(dp.getShortTitle(), instSiteName, userOrSiteOrInst, roleChoice);
 		props.put("emailText", notifMessage);
 		for (User rcpt : notifyUsers) {
 			props.put("rcpt", rcpt);
@@ -835,7 +837,6 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 		notif.setCreatedBy(AuthUtil.getCurrentUser());
 		notif.setCreationTime(Calendar.getInstance().getTime());
 		notif.setMessage(notifMessage);
-
 		NotifUtil.getInstance().notify(notif, Collections.singletonMap("dp-overview", notifyUsers));
 	}
 
@@ -853,5 +854,28 @@ public class DistributionProtocolServiceImpl implements DistributionProtocolServ
 		return MessageUtil.getInstance().getMessage(msgKey, params);
 	}
 
+	private List<User> getInstituteAdmins(Institute institute) {
+		return daoFactory.getUserDao().getUsers(
+			new UserListCriteria()
+				.instituteName(institute.getName())
+				.type("INSTITUTE")
+				.activityStatus("Active")
+		);
+	}
+
 	private static final String ROLE_UPDATED_EMAIL_TMPL = "users_dp_role_updated";
+
+	private static final int N_USER = 0;
+
+	private static final int N_SITE_ADMIN = 1;
+
+	private static final int N_INST_ADMIN = 2;
+
+	private static final int N_DP_PI = 1;
+
+	private static final int N_DP_COORD = 2;
+
+	private static final int N_DP_DIST_SITE = 1;
+
+	private static final int N_DP_RECV_SITE = 2;
 }
